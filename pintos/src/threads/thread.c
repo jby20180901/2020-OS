@@ -471,6 +471,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   t->ticks_blocked = 0;
+  t->old_priorty = priority;
+  t->lock_wait = NULL;
+  list_init(&t->locks);
   old_level = intr_disable ();
   list_insert_ordered (&all_list, &t->allelem,thread_sort_cmp,NULL);
   intr_set_level (old_level);
