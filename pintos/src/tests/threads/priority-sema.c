@@ -35,6 +35,7 @@ test_priority_sema (void)
       sema_up (&sema);
       msg ("Back in main thread."); 
     }
+    timer_sleep(300);
 }
 
 static void
