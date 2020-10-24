@@ -4,7 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-
+#include "threads/fixed_point.h"
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -93,7 +93,8 @@ struct thread
     struct list locks;                  /* The locks we have */
     
     struct list_elem allelem;           /* List element for all threads list. 进程表*/
-
+    int nice;                           /* Niceness. */
+    fp_t recent_cpu;                 /* Recent CPU. */
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
     int64_t ticks_blocked;
@@ -143,4 +144,8 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 void blocked_thread_check(struct thread *t,void *aux UNUSED);
 bool thread_sort_cmp(struct list_elem *a,struct list_elem *b,void *aux);
+void increase_recent_cpu();
+void update_load_avg();
+void update_recent_cpu();
+void update_priority(struct thread *t);
 #endif /* threads/thread.h */

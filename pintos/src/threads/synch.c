@@ -202,18 +202,20 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
   enum intr_level old_level =intr_disable();
-  l->lock_wait = lock;
-  while(ls->lock_wait->holder!=NULL&&ls->lock_wait!=NULL)
-  {
-    ls = ls->lock_wait->holder;
-    if(ls->priority < l->priority)
+  if(!thread_mlfqs){
+    l->lock_wait = lock;
+    while(ls->lock_wait->holder!=NULL&&ls->lock_wait!=NULL)
     {
-      donate_priority(ls,l);
-      if(ls->lock_wait == NULL)
+      ls = ls->lock_wait->holder;
+      if(ls->priority < l->priority)
+      {
+        donate_priority(ls,l);
+        if(ls->lock_wait == NULL)
+          break;
+      }
+      else{
         break;
-    }
-    else{
-      break;
+      }
     }
   }
   intr_set_level(old_level);
@@ -314,7 +316,8 @@ lock_release (struct lock *lock)
     }
   }
   if(need_priority < thread_current()->old_priorty) need_priority = thread_current()->old_priorty;
-  thread_current()->priority = need_priority;
+  
+  if(!thread_mlfqs) thread_current()->priority = need_priority;
   intr_set_level(old_level);
   lock->holder = NULL;
   sema_up (&lock->semaphore);

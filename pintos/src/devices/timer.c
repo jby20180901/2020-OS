@@ -176,6 +176,18 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  if (thread_mlfqs)
+  {
+    
+    increase_recent_cpu ();
+    if (ticks % TIMER_FREQ == 0){
+      update_load_avg ();
+      update_recent_cpu ();
+    }
+    else if (ticks % 4 == 0){
+      update_priority (thread_current ());
+    }
+  }
   thread_foreach (blocked_thread_check, NULL);
 }
 
