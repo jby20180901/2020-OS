@@ -102,6 +102,9 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. 魔数*/
 
     int64_t ticks_blocked;
+
+    int nice;                           /* Niceness of thread used in mlfqs */
+    int64_t recent_cpu;                 /* Used in mlfqs */
   };
 
 /* If false (default), use round-robin scheduler.
@@ -140,6 +143,11 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+void increase_recent_cpu(void);
+void modify_priority(struct thread *t,void *aux UNUSED);
+void modify_cpu(struct thread *t,void *aux UNUSED);
+void modify_load_avg(void);
 
 
 void check_blocked_time(struct thread *t, void *aux);
