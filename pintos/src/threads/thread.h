@@ -8,21 +8,21 @@
 /* States in a thread's life cycle. */
 enum thread_status
   {
-    THREAD_RUNNING,     /* Running thread. 运行态*/
-    THREAD_READY,       /* Not running but ready to run. 就绪态*/
-    THREAD_BLOCKED,     /* Waiting for an event to trigger. 等待态*/
-    THREAD_DYING        /* About to be destroyed. 终止态*/
+    THREAD_RUNNING,     /* Running thread. */
+    THREAD_READY,       /* Not running but ready to run. */
+    THREAD_BLOCKED,     /* Waiting for an event to trigger. */
+    THREAD_DYING        /* About to be destroyed. */
   };
 
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
 typedef int tid_t;
-#define TID_ERROR ((tid_t) -1)          /* Error value for tid_t. tid=-1，错误*/
+#define TID_ERROR ((tid_t) -1)          /* Error value for tid_t. */
 
 /* Thread priorities. */
-#define PRI_MIN 0                       /* Lowest priority. 最低优先级0*/
-#define PRI_DEFAULT 31                  /* Default priority. 默认优先级31*/
-#define PRI_MAX 63                      /* Highest priority. 最高优先级63*/
+#define PRI_MIN 0                       /* Lowest priority. */
+#define PRI_DEFAULT 31                  /* Default priority. */
+#define PRI_MAX 63                      /* Highest priority. */
 
 /* A kernel thread or user process.
 
@@ -33,7 +33,7 @@ typedef int tid_t;
    the page (at offset 4 kB).  Here's an illustration:
 
         4 kB +---------------------------------+
-             |          kernel stack           |栈空间
+             |          kernel stack           |
              |                |                |
              |                |                |
              |                V                |
@@ -84,11 +84,11 @@ struct thread
   {
     /* Owned by thread.c. */
     tid_t tid;                          /* Thread identifier. */
-    enum thread_status status;          /* Thread state. 进程状态*/
-    char name[16];                      /* Name (for debugging purposes). 进程名称*/
-    uint8_t *stack;                     /* Saved stack pointer. 栈指针*/
-    int priority;                       /* Priority. 优先级*/
-    struct list_elem allelem;           /* List element for all threads list. 进程表*/
+    enum thread_status status;          /* Thread state. */
+    char name[16];                      /* Name (for debugging purposes). */
+    uint8_t *stack;                     /* Saved stack pointer. */
+    int priority;                       /* Priority. */
+    struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -99,9 +99,12 @@ struct thread
 #endif
 
     /* Owned by thread.c. */
-    unsigned magic;                     /* Detects stack overflow. 魔数*/
+    unsigned magic;                     /* Detects stack overflow. */
 
-    int64_t ticks_blocked;
+    int64_t ticks_blocked;              /* Time for blocked. */
+    struct list locks;                  /* Locks this thread holds */
+    struct lock *waiting_lock;          /* The lock this thread is waiting for */
+    int original_priority;              /* Original priority of this thread */
 
     int nice;                           /* Niceness of thread used in mlfqs */
     int64_t recent_cpu;                 /* Used in mlfqs */
@@ -133,24 +136,21 @@ void thread_yield (void);
 
 /* Performs some operation on thread t, given auxiliary data AUX. */
 typedef void thread_action_func (struct thread *t, void *aux);
+void check_blocked_time(struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
 
 int thread_get_priority (void);
 void thread_set_priority (int);
-bool thread_compare_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED);
 
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+bool thread_compare_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED);
+
 void increase_recent_cpu(void);
 void modify_priority(struct thread *t,void *aux UNUSED);
 void modify_cpu(struct thread *t,void *aux UNUSED);
 void modify_load_avg(void);
-
-
-void check_blocked_time(struct thread *t, void *aux);
-
 #endif /* threads/thread.h */
-

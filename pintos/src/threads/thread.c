@@ -21,25 +21,27 @@
    of thread.h for details. */
 #define THREAD_MAGIC 0xcd6abf4b
 
+/* The average number of threads ready to run in OS used in mlfqs */
 int64_t load_avg;
+
 /* List of processes in THREAD_READY state, that is, processes
-   that are ready to run but not actually running. 就绪队列*/
+   that are ready to run but not actually running. */
 static struct list ready_list;
 
 /* List of all processes.  Processes are added to this list
-   when they are first scheduled and removed when they exit. 进程队列*/
+   when they are first scheduled and removed when they exit. */
 static struct list all_list;
 
-/* Idle thread. 0号进程*/
+/* Idle thread. */
 static struct thread *idle_thread;
 
-/* Initial thread, the thread running init.c:main(). 1号进程*/
+/* Initial thread, the thread running init.c:main(). */
 static struct thread *initial_thread;
 
-/* Lock used by allocate_tid(). 进程锁*/
+/* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
-/* Stack frame for kernel_thread(). 内核线程结构*/
+/* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
   {
     void *eip;                  /* Return address. */
@@ -47,13 +49,13 @@ struct kernel_thread_frame
     void *aux;                  /* Auxiliary data for function. */
   };
 
-/* Statistics. 时钟*/
+/* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
 static long long user_ticks;    /* # of timer ticks in user programs. */
 
 /* Scheduling. */
-#define TIME_SLICE 4            /* # of timer ticks to give each thread. 时间片每进程4个*/
+#define TIME_SLICE 4            /* # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /* # of timer ticks since last yield. */
 
 /* If false (default), use round-robin scheduler.
@@ -89,7 +91,7 @@ static tid_t allocate_tid (void);
 void
 thread_init (void) 
 {
-  ASSERT (intr_get_level () == INTR_OFF);//中断状态为关
+  ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
   list_init (&ready_list);
@@ -319,6 +321,16 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
+/* Check every threads whether they should be awaked. */
+void check_blocked_time(struct thread *t, void *aux UNUSED){
+  if (t->status == THREAD_BLOCKED && t->ticks_blocked > 0){
+    t->ticks_blocked--;
+    if (t->ticks_blocked == 0)
+      thread_unblock(t);
+  }
+}
+
+
 /* Invoke function 'func' on all threads, passing along 'aux'.
    This function must be called with interrupts off. */
 void
@@ -340,8 +352,11 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
-  thread_yield();
+  thread_current ()->original_priority = new_priority;
+  if(list_empty(&thread_current()->locks) || new_priority > thread_current()->priority){
+    thread_current()->priority = new_priority;
+    thread_yield();
+  }
 }
 
 /* Returns the current thread's priority. */
@@ -355,7 +370,6 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-  /* Not yet implemented. */
   thread_current()->nice = nice;
   modify_priority(thread_current(),NULL);
   thread_yield();
@@ -365,7 +379,6 @@ thread_set_nice (int nice UNUSED)
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
   return thread_current()->nice;
 }
 
@@ -373,17 +386,14 @@ thread_get_nice (void)
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
   int temp = MULTIPLY_X_BY_N(load_avg,100);
   return CONVERT_X_TO_INTEGER_NEAREST(temp);
-
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
   return CONVERT_X_TO_INTEGER_NEAREST(MULTIPLY_X_BY_N(thread_current()->recent_cpu,100));
 }
 
@@ -470,12 +480,16 @@ init_thread (struct thread *t, const char *name, int priority)
 
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
+  t->ticks_blocked = 0;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
+  t->original_priority = priority;
   t->magic = THREAD_MAGIC;
+  t->waiting_lock = NULL;
 
   old_level = intr_disable ();
+  list_init(&t->locks);
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
 }
@@ -492,6 +506,7 @@ alloc_frame (struct thread *t, size_t size)
   t->stack -= size;
   return t->stack;
 }
+
 
 bool thread_compare_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED){
   return list_entry(a,struct thread,elem)->priority < list_entry(b,struct thread,elem)->priority;
@@ -512,7 +527,6 @@ next_thread_to_run (void)
     list_remove (max_priority);
     return list_entry (max_priority,struct thread,elem);
   }
-    // return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
 
 /* Completes a thread switch by activating the new thread's page
@@ -597,15 +611,10 @@ allocate_tid (void)
 
   return tid;
 }
-
-/* Check every threads whether they should be awaked. */
-void check_blocked_time(struct thread *t, void *aux){
-  if (t->status == THREAD_BLOCKED && t->ticks_blocked > 0){
-    t->ticks_blocked--;
-    if (t->ticks_blocked == 0)
-      thread_unblock(t);
-  }
-}
+
+/* Offset of `stack' member within `struct thread'.
+   Used by switch.S, which can't figure it out on its own. */
+uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
 /* Increment by 1 for each clock tick */
 void increase_recent_cpu(void){
@@ -647,8 +656,3 @@ void modify_load_avg(void){
   int add2 = DIVIDE_X_BY_N(CONVERT_N_TO_FIXED_POINT(ready_threads),60);
   load_avg = ADD_X_AND_Y(add1,add2);
 }
-
-
-/* Offset of `stack' member within `struct thread'.
-   Used by switch.S, which can't figure it out on its own. */
-uint32_t thread_stack_ofs = offsetof (struct thread, stack);
