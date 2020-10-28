@@ -463,7 +463,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  t->ticks_blocked = 0;
+
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -482,6 +482,10 @@ alloc_frame (struct thread *t, size_t size)
   return t->stack;
 }
 
+bool thread_compare_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED){
+  return list_entry(a,struct thread,elem)->priority < list_entry(b,struct thread,elem)->priority;
+}
+
 /* Chooses and returns the next thread to be scheduled.  Should
    return a thread from the run queue, unless the run queue is
    empty.  (If the running thread can continue running, then it
@@ -492,20 +496,12 @@ next_thread_to_run (void)
 {
   if (list_empty (&ready_list))
     return idle_thread;
-  else
-    return list_entry (list_pop_front (&ready_list), struct thread, elem);
-}
-
-/*每次时间中断的时候将每个进程的ticks_blocked--*/
-void 
-blocked_thread_check(struct thread *t,void *aux UNUSED)
-{
-  if(t->status == THREAD_BLOCKED && t->ticks_blocked > 0)
-  {
-    t->ticks_blocked --;
-    if(t->ticks_blocked == 0)
-      thread_unblock(t);
+  else{
+    struct list_elem *max_priority = list_max (&ready_list,thread_compare_priority,NULL);
+    list_remove (max_priority);
+    return list_entry (max_priority,struct thread,elem);
   }
+    // return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
 
 /* Completes a thread switch by activating the new thread's page
@@ -590,6 +586,16 @@ allocate_tid (void)
 
   return tid;
 }
+
+/* Check every threads whether they should be awaked. */
+void check_blocked_time(struct thread *t, void *aux){
+  if (t->status == THREAD_BLOCKED && t->ticks_blocked > 0){
+    t->ticks_blocked--;
+    if (t->ticks_blocked == 0)
+      thread_unblock(t);
+  }
+}
+
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */

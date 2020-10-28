@@ -92,7 +92,7 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-    int64_t ticks_blocked;
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -100,6 +100,8 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. 魔数*/
+
+    int64_t ticks_blocked;
   };
 
 /* If false (default), use round-robin scheduler.
@@ -137,5 +139,9 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-void blocked_thread_check(struct thread *t,void *aux UNUSED);
+
+
+void check_blocked_time(struct thread *t, void *aux);
+
 #endif /* threads/thread.h */
+
