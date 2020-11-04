@@ -7,17 +7,23 @@
 
 总共100%
 
-18373403 姜宝洋25%
++ 18373403 姜宝洋25%
 
-18373570 邓涵之25%
++ 18373570 邓涵之25%
 
-18373133 方洁25%
++ 18373133 方洁25%
 
-18373744 姜昊25%
++ 18373744 姜昊25%
 
-![img](file:///C:/Users/24951/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png)
+![image-20201104193613228](C:\Users\24951\AppData\Roaming\Typora\typora-user-images\image-20201104193613228.png)
 
-![img](file:///C:/Users/24951/AppData/Local/Temp/msohtmlclip1/01/clip_image004.png)![img](file:///C:/Users/24951/AppData/Local/Temp/msohtmlclip1/01/clip_image006.png)
+![image-20201104193300363](C:\Users\24951\AppData\Roaming\Typora\typora-user-images\image-20201104193300363.png)
+
+![image-20201104193359954](C:\Users\24951\AppData\Roaming\Typora\typora-user-images\image-20201104193359954.png)
+
+![image-20201104193208249](C:\Users\24951\AppData\Roaming\Typora\typora-user-images\image-20201104193208249.png)
+
+
 
 ##### 2.实验设计与相关问题
 
