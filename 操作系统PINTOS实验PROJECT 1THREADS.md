@@ -224,9 +224,9 @@ asm volatile("sti":::"memory");
 
 > (1)数据结构
 
-> B1 在此复制每个新的或更改的struct或的声明struct成员，全局或静态变量，“ typedef”或枚举。用25个字以内的单词来确定每个单词的目的。
+> B1 在此复制每个新的或更改的`struct`或的声明`struct`成员，全局或静态变量，`typedef`或枚举。用25个字以内的单词来确定每个单词的目的。
 
-+ thread结构体
++ `thread`结构体
 
 ```c
   /*the lock the thread is waiting for*/
@@ -237,7 +237,7 @@ asm volatile("sti":::"memory");
   int base_priority;
 ```
 
-+ lock结构体
++ `lock`结构体
 
 ```c
   struct list_elem elem;
@@ -245,7 +245,7 @@ asm volatile("sti":::"memory");
 
 
 
-> B2 解释用于跟踪优先级捐赠的数据结构。 使用ASCII艺术作品来绘制嵌套捐赠。
+> B2 解释用于跟踪优先级捐赠的数据结构。 使用ASCIIart来绘制嵌套捐赠。
 
 ```c
 |Thread 1|low| //首先我们有一个低优先级的线程拥有一个锁lock1
@@ -266,7 +266,7 @@ asm volatile("sti":::"memory");
 
 
 
-> B4 描述对lock_acquire()的调用导致优先级捐赠时的事件顺序。嵌套捐赠如何处理？
+> B4 描述对`lock_acquire()`的调用导致优先级捐赠时的事件顺序。嵌套捐赠如何处理？
 
 如下处理：
 
@@ -289,7 +289,7 @@ asm volatile("sti":::"memory");
 
  
 
-B5 描述在较高优先级线程正在等待的锁上调用lock_release()时的事件顺序。
+B5 描述在较高优先级线程正在等待的锁上调用`lock_release()`时的事件顺序。
 
 ```c
 enum intr_level old_level = intr_disable();
@@ -340,7 +340,7 @@ void restorePriority(){
 
 > (3)同步
 
-> B6 在thread_set_priority()中描述潜在的竞争，并说明您的实现如何避免这种情况。您可以使用锁来避免这场竞争吗？
+> B6 在`thread_set_priority()`中描述潜在的竞争，并说明您的实现如何避免这种情况。您可以使用锁来避免这场竞争吗？
 
 ```c
 /* Sets the current thread's priority to NEW_PRIORITY. */
@@ -424,7 +424,7 @@ thread_set_priority (int new_priority)
 
 > (1)数据结构
 
-> C1：在此复制每个新的或更改的struct或的声明struct成员，全局或静态变量，“ typedef”或枚举。用25个字以内的单词来确定每个单词的目的。
+> C1：在此复制每个新的或更改的`struct`或的声明`struct`成员，全局或静态变量，`typedef`或枚举。用25个字以内的单词来确定每个单词的目的。
 
 + 浮点数计算
 
@@ -461,7 +461,7 @@ myfloat load_avg;
 
 > (2)算法
 
-> C2：假设线程A，B和C的nice值分别为0、1和2。每个的recent_cpu值均为0。填写下表，显示调度决策以及每个进程的priority和recent_cpu值
+> C2：假设线程A，B和C的`nice`值分别为0、1和2。每个的`recent_cpu`值均为0。填写下表，显示调度决策以及每个进程的`priority`和`recent_cpu`值
 
 | Timer | Recent_cpu | Priority | `Thread` |      |      |      |        |
 | ----- | ---------- | -------- | -------- | ---- | ---- | ---- | ------ |
@@ -497,13 +497,13 @@ myfloat load_avg;
 
 设计：
 
-​    （1）、题目中要求：每一个tick，增加当前线程的recent_cpu；每4个ticks，更新所有线程的优先级；每秒钟（100个ticks）更新所有线程的优先级、recent_cpu，并且更新load_avg的值。
+​    （1）、题目中要求：每一个tick，增加当前线程的`recent_cpu`；每4个`ticks`，更新所有线程的优先级；每秒钟（100个`ticks`）更新所有线程的优先级、`recent_cpu`，并且更新`load_avg`的值。
 
-​    因为这个要求与时间中断密切相关，所以我们将更新优先级、recent_cpu、load_avg的函数写在timer_interrupt函数里面，每一个时间中断tick就进行一次操作，进行操作的时候屏蔽中断，达到原子操作的效果。
+​    因为这个要求与时间中断密切相关，所以我们将更新优先级、`recent_cpu`、`load_avg`的函数写在`timer_interrupt`函数里面，每一个时间中断tick就进行一次操作，进行操作的时候屏蔽中断，达到原子操作的效果。
 
-​    （2）、我们在调取等待队列的大小值时，没有用list_size函数（因为出现了一些问题）我们利用thread_foreach函数使每个运行中和等待中的线程修改同一个全局变量，达到计数的目的。
+​    （2）、我们在调取等待队列的大小值时，没有用`list_size`函数（因为出现了一些问题）我们利用`thread_foreach`函数使每个运行中和等待中的线程修改同一个全局变量，达到计数的目的。
 
-改进：在维护各个优先队列的时候，我们发现pintos自带的关于链表的操作函数有一定的缺陷，而且还可能被我们之前修改的代码影响（比如本组在做该部分实验时，list_size函数出现了一些问题）如果再有一些时间，我们可以对pintos自带的list函数进行修改。
+改进：在维护各个优先队列的时候，我们发现`pintos`自带的关于链表的操作函数有一定的缺陷，而且还可能被我们之前修改的代码影响（比如本组在做该部分实验时，`list_size`函数出现了一些问题）如果再有一些时间，我们可以对`pintos`自带的`list`函数进行修改。
 
 > C6：作业详细说明了定点数学的算术，但它使您可以实施它。 您为什么决定以自己的方式实施它？ 如果您为定点数学创建了一个抽象层，即一个抽象数据类型和/或一组函数或宏来操纵定点数，为什么要这么做？ 如果没有，为什么不呢？
 
