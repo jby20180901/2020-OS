@@ -114,6 +114,11 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  #ifdef USERPROG
+    if ((strcmp(thread_current()->name, "main") != 0) && (strcmp(thread_current()->name, "halt") != 0)){
+      printf("%s: exit(%d)\n", thread_current()->name, thread_current()->ret);
+    }
+#endif
 }
 
 /* Sets up the CPU for running user code in the current
