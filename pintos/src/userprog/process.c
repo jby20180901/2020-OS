@@ -38,15 +38,8 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
-  char *token,*save_ptr;
-  token = strtok_r(file_name," ",&save_ptr);
-
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (token, PRI_DEFAULT, start_process, fn_copy);
-  /* 有关子进程的代码 */
-
-
-  /* 有关子进程的代码 */
+  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy); 
   return tid;
@@ -233,25 +226,13 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
-  char *fn_copy;
-
-  fn_copy = palloc_get_page(0);
-  if(fn_copy == NULL){
-    return TID_ERROR;
-  }
-  strlcpy(fn_copy,file_name,PGSIZE);
   /* Open executable file. */
-  char *token,*save_ptr;
-  token = strtok_r(fn_copy,file_name,&save_ptr);
-  // lock_acquire(&handlesem);
-  file = filesys_open (token);
-  // lock_release(&handlesem);
-  // filenum++;
-  if (file == NULL)
-  {
-    printf("load: %s: open failed\n", file_name);
-    goto done; 
-  }
+  file = filesys_open (file_name);
+  if (file == NULL) 
+    {
+      printf ("load: %s: open failed\n", file_name);
+      goto done; 
+    }
 
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
@@ -326,7 +307,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp,fn_copy))
+  if (!setup_stack (esp))
     goto done;
 
   /* Start address. */
@@ -336,7 +317,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
-  palloc_free_page(fn_copy);
   file_close (file);
   return success;
 }
@@ -452,67 +432,21 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp,char *file_name) 
+setup_stack (void **esp) 
 {
   uint8_t *kpage;
   bool success = false;
-  char *fn_copy;
-  fn_copy = palloc_get_page(0);
-  if(fn_copy == NULL){
-    return TID_ERROR;
-  }
-  strlcpy(fn_copy,file_name,PGSIZE);
+
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success){
+      if (success)
         *esp = PHYS_BASE;
-        uint8_t *jinesp = (uint8_t *)*esp;
-        char *token, *token2, *save_ptr, *save_ptr2;
-        int argc = 0, arglength = 1;
-        int jinjin = 0;
-        for (token = strtok_r(file_name, " ", &save_ptr); token != NULL;
-             token = strtok_r(NULL, " ", &save_ptr))
-        {
-          argc++;
-          arglength += (int)(strlen(token)) + 1;
-        }
-        jinesp -= arglength;
-        jinesp -= (argc + 1) * 4;
-        jinesp -= 12;
-        *esp -= (arglength + 12 + (argc + 1) * 4);
-
-        thread_current()->process_stack = (char *)*esp;
-
-        *(int *)jinesp = jinjin;
-        jinesp += 4;
-        *(int *)jinesp = argc;
-        jinesp += 4;
-        *(uint32_t *)jinesp = (uint32_t)(jinesp + 4);
-        jinesp += 4;
-        int temp = 4 * (argc + 1) + 1;
-        for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL;
-             token2 = strtok_r(NULL, " ", &save_ptr2))
-        {
-          *(uint32_t *)jinesp = (uint32_t)(jinesp + temp);
-          jinesp += temp;
-          strlcpy((char *)jinesp, token2, (size_t)(strlen(token2) + 1));
-          jinesp -= temp;
-          jinesp += 4;
-          temp -= 4;
-          temp += strlen(token2) + 1;
-        }
-        *(int *)jinesp = jinjin;
-        uint8_t woowoo = (uint8_t)0;
-        jinesp += 4;
-        *jinesp = woowoo;
-      }
       else
         palloc_free_page (kpage);
     }
-    palloc_free_page(fn_copy);
-    return success;
+  return success;
 }
 
 /* Adds a mapping from user virtual address UPAGE to kernel
