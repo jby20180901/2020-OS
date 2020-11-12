@@ -14,6 +14,7 @@
 #include "threads/fixed_point.h"
 #ifdef USERPROG
 #include "userprog/process.h"
+#include "userprog/syscall.h"
 #endif
 
 /* Random value for struct thread's `magic' member.
@@ -99,6 +100,9 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+  #ifdef USERPROG
+    lock_init(&handlesem);
+  #endif
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -531,6 +535,17 @@ init_thread (struct thread *t, const char *name, int priority)
   t->nice = 0;
   t->recent_cpu = int_to_fp (0);
   list_init(&t->locks);
+  #ifdef USERPROG
+    list_init(&t->childrenlist);
+    sema_init(&t->diesem, 0);
+    sema_init(&t->loadsem, 0);
+    sema_init(&t->loadsuccesssem, 0);
+    sema_init(&t->waitsem, 0);
+    sema_init(&t->exitsem, 0);
+    sema_init(&t->filesem, 1);
+    sema_init(&t->jinsem, 0);
+    t->loadsuccess = true;
+  #endif
   old_level = intr_disable ();
   list_insert_ordered (&all_list, &t->allelem,thread_sort_cmp,NULL);
   intr_set_level (old_level);
