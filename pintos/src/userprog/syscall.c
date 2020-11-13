@@ -35,17 +35,11 @@ put_user(uint8_t *udst, uint8_t byte)
   return error_code != -1;
 }
 
-static void syscall_handler(struct intr_frame *);
+static void syscall_handler (struct intr_frame *);
 struct lock handlesem;
 bool already = false;
 bool jungwoo = false;
 int filenum = 0;
-
-void syscall_init(void)
-{
-
-  intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-}
 
 static void
 syscall_handler(struct intr_frame *f)

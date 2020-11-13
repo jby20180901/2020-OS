@@ -1,11 +1,11 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
-#define USERPROG 1
+
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-#include "threads/fixed_point.h"
 #include "synch.h"
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -89,16 +89,11 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). 进程名称*/
     uint8_t *stack;                     /* Saved stack pointer. 栈指针*/
     int priority;                       /* Priority. 优先级*/
-    int old_priorty;                    /* Old priority */
-    struct lock *lock_wait;             /* The lock we wait */
-    struct list locks;                  /* The locks we have */
-    
     struct list_elem allelem;           /* List element for all threads list. 进程表*/
-    int nice;                           /* Niceness. */
-    fp_t recent_cpu;                 /* Recent CPU. */
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-    int64_t ticks_blocked;
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -159,10 +154,5 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-void blocked_thread_check(struct thread *t,void *aux UNUSED);
-bool thread_sort_cmp(struct list_elem *a,struct list_elem *b,void *aux);
-void increase_recent_cpu();
-void update_load_avg();
-void update_recent_cpu();
-void update_priority(struct thread *t);
+
 #endif /* threads/thread.h */
