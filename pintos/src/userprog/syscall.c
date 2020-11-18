@@ -40,7 +40,12 @@ struct lock handlesem;
 bool already = false;
 bool jungwoo = false;
 int filenum = 0;
+void
+syscall_init (void)
+{
 
+	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+}
 static void
 syscall_handler(struct intr_frame *f)
 {
@@ -55,7 +60,7 @@ syscall_handler(struct intr_frame *f)
   {
   case SYS_HALT:
   {
-    power_off();
+    shutdown_power_off();
     break;
   }
   case SYS_EXIT:

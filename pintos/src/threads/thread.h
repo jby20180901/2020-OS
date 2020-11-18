@@ -24,7 +24,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. 最低优先级0*/
 #define PRI_DEFAULT 31                  /* Default priority. 默认优先级31*/
 #define PRI_MAX 63                      /* Highest priority. 最高优先级63*/
-
+#define USERPROG 1
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
