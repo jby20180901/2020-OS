@@ -97,22 +97,22 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    char *process_stack;
-    int returnstatus;
-    struct file *fdtable[64];
-    int nextfd;
-    struct list childrenlist;
-    struct list_elem child_elem;
-    struct semaphore loadsem;
-    struct semaphore loadsuccesssem;
-    struct semaphore waitsem;
-    struct semaphore diesem;
-    struct semaphore exitsem;
-    struct semaphore filesem;
-    struct semaphore jinsem;
-    bool loadsuccess;
-    struct file *file;
-    bool wait;
+    char *process_stack;                /* 用户栈 */
+    int returnstatus;                   /* 返回值 */
+    struct file *fdtable[64];           /* 已打开的文件列表 */
+    int nextfd;                         /* 下一个文件指针 */
+    struct list childrenlist;           /* 子进程列表 */
+    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
+    struct semaphore loadsem;           /*  */
+    struct semaphore loadsuccesssem;    /*  */
+    struct semaphore waitsem;           /*  */
+    struct semaphore diesem;            /*  */
+    struct semaphore exitsem;           /*  */
+    struct semaphore filesem;           /*  */
+    struct semaphore jinsem;            /*  */
+    bool loadsuccess;                   /* 是否load成功 */
+    struct file *file;                  /* 当前打开的文件 */
+    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */

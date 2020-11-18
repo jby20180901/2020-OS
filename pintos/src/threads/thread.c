@@ -101,7 +101,7 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();
 
   #ifdef USERPROG
-    lock_init(&handlesem);
+    lock_init(&handlesem);//初始化handlesem锁
   #endif
 }
 
@@ -203,8 +203,8 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
   #ifdef USERPROG
-    list_push_back(&thread_current()->childrenlist, &t->child_elem);
-    t->wait = false;
+    list_push_back(&thread_current()->childrenlist, &t->child_elem);//把这个线程加入当前线程的子进程列表
+    t->wait = false;//新生成的子进程等待子进程状态为false
   #endif
 
   /* Add to run queue. */
