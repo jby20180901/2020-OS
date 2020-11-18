@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "synch.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -23,7 +24,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. 最低优先级0*/
 #define PRI_DEFAULT 31                  /* Default priority. 默认优先级31*/
 #define PRI_MAX 63                      /* Highest priority. 最高优先级63*/
-
+#define USERPROG 1
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -96,6 +97,22 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    char *process_stack;
+    int returnstatus;
+    struct file *fdtable[64];
+    int nextfd;
+    struct list childrenlist;
+    struct list_elem child_elem;
+    struct semaphore loadsem;
+    struct semaphore loadsuccesssem;
+    struct semaphore waitsem;
+    struct semaphore diesem;
+    struct semaphore exitsem;
+    struct semaphore filesem;
+    struct semaphore jinsem;
+    bool loadsuccess;
+    struct file *file;
+    bool wait;
 #endif
 
     /* Owned by thread.c. */
