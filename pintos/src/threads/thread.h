@@ -4,6 +4,9 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
+#include "filesys/filesys.h"
+#include "filesys/file.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -93,6 +96,19 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+    int ret; //用来记录返回值
+
+    int wait_for;                //正在等待的子进程
+    struct semaphore child_sema; //等待子进程的信号量
+
+    struct thread *father_process; //父进程
+    struct list_elem child_of;     //用来放在父进程的子进程列表中
+
+    struct list list_opened_file;
+    int max_fd;
+
+    bool waited; //这个进程是否已经被别人给wait了
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -138,4 +154,5 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+struct thread *get_thread_by_tid(int tid);
 #endif /* threads/thread.h */

@@ -582,3 +582,29 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+struct find_argument
+{
+  struct thread *saved;
+  int tid;
+};
+/*比较两个线程的tid一不一样*/
+void cmp_thread_tid(struct thread *t, void *aux)
+{
+  struct find_argument *arg = (struct find_argument *)aux;
+  if (t->tid == arg->tid)
+  {
+    arg->saved = t;
+  }
+}
+
+/*用tid获得一个线程*/
+struct thread *get_thread_by_tid(int tid)
+{
+  struct thread *saved;
+  struct find_argument arg = {saved, tid};
+  enum intr_level old_level = intr_disable();
+  thread_foreach(cmp_thread_tid, &arg);
+  intr_set_level(old_level);
+  return arg.saved;
+}
