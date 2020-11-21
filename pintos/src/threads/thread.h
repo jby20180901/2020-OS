@@ -1,10 +1,11 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
-#define USERPROG 1
+
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-#include "threads/fixed_point.h"
+#include "synch.h"
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -23,7 +24,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. 最低优先级0*/
 #define PRI_DEFAULT 31                  /* Default priority. 默认优先级31*/
 #define PRI_MAX 63                      /* Highest priority. 最高优先级63*/
-
+#define USERPROG 1
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -88,20 +89,30 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). 进程名称*/
     uint8_t *stack;                     /* Saved stack pointer. 栈指针*/
     int priority;                       /* Priority. 优先级*/
-    int old_priorty;                    /* Old priority */
-    struct lock *lock_wait;             /* The lock we wait */
-    struct list locks;                  /* The locks we have */
-    
     struct list_elem allelem;           /* List element for all threads list. 进程表*/
-    int nice;                           /* Niceness. */
-    fp_t recent_cpu;                 /* Recent CPU. */
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-    int64_t ticks_blocked;
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    int ret;
+    char *process_stack;                /* 用户栈 */
+    int returnstatus;                   /* 返回值 */
+    struct file *fdtable[64];           /* 已打开的文件列表 */
+    int nextfd;                         /* 下一个文件指针 */
+    struct list childrenlist;           /* 子进程列表 */
+    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
+    struct semaphore loadsem;           /*  */
+    struct semaphore loadsuccesssem;    /*  */
+    struct semaphore waitsem;           /*  */
+    struct semaphore diesem;            /*  */
+    struct semaphore exitsem;           /*  */
+    struct semaphore filesem;           /*  */
+    struct semaphore jinsem;            /*  */
+    bool loadsuccess;                   /* 是否load成功 */
+    struct file *file;                  /* 当前打开的文件 */
+    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */
@@ -143,10 +154,5 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-void blocked_thread_check(struct thread *t,void *aux UNUSED);
-bool thread_sort_cmp(struct list_elem *a,struct list_elem *b,void *aux);
-void increase_recent_cpu();
-void update_load_avg();
-void update_recent_cpu();
-void update_priority(struct thread *t);
+
 #endif /* threads/thread.h */
