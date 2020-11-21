@@ -84,39 +84,44 @@ typedef int tid_t;
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
 struct thread
-  {
-    /* Owned by thread.c. */
-    tid_t tid;                          /* Thread identifier. */
-    enum thread_status status;          /* Thread state. 进程状态*/
-    char name[16];                      /* Name (for debugging purposes). 进程名称*/
-    uint8_t *stack;                     /* Saved stack pointer. 栈指针*/
-    int priority;                       /* Priority. 优先级*/
-    struct list_elem allelem;           /* List element for all threads list. 进程表*/
+{
+   /* Owned by thread.c. */
+   tid_t tid;                 /* Thread identifier. */
+   enum thread_status status; /* Thread state. */
+   char name[16];             /* Name (for debugging purposes). */
+   uint8_t *stack;            /* Saved stack pointer. */
+   int priority;              /* Priority. */
+   struct list_elem allelem;  /* List element for all threads list. */
 
-    /* Shared between thread.c and synch.c. */
-    struct list_elem elem;              /* List element. */
+   /* Shared between thread.c and synch.c. */
+   struct list_elem elem; /* List element. */
 
-    int ret; //用来记录返回值
+   int ret; //用来记录返回值
 
-    int wait_for;                //正在等待的子进程
-    struct semaphore child_sema; //等待子进程的信号量
+   int wait_for;                //正在等待的子进程
+   struct semaphore child_sema; //等待子进程的信号量
 
-    struct thread *father_process; //父进程
-    struct list_elem child_of;     //用来放在父进程的子进程列表中
+   struct thread *father_process; //父进程
+   struct list_elem child_of;     //用来放在父进程的子进程列表中
 
-    struct list list_opened_file;
-    int max_fd;
+   struct list list_opened_file;
+   int max_fd;
 
-    bool waited; //这个进程是否已经被别人给wait了
-
+   bool waited; //这个进程是否已经被别人给wait了
 #ifdef USERPROG
-    /* Owned by userprog/process.c. */
-    uint32_t *pagedir;                  /* Page directory. */
+   /* Owned by userprog/process.c. */
+   uint32_t *pagedir; /* Page directory. */
 #endif
 
-    /* Owned by thread.c. */
-    unsigned magic;                     /* Detects stack overflow. 魔数*/
-  };
+   /* Owned by thread.c. */
+   unsigned magic; /* Detects stack overflow. */
+};
+struct opened_file
+{
+   struct file *position;
+   int fd;
+   struct list_elem node;
+};
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
