@@ -13,7 +13,6 @@
 #include "threads/vaddr.h"
 #ifdef USERPROG
 #include "userprog/process.h"
-#include "userprog/syscall.h"
 #endif
 
 /* Random value for struct thread's `magic' member.
@@ -99,10 +98,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-
-  #ifdef USERPROG
-    lock_init(&handlesem);//初始化handlesem锁
-  #endif
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -202,10 +197,6 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
   sf->ebp = 0;
-  #ifdef USERPROG
-    list_push_back(&thread_current()->childrenlist, &t->child_elem);//把这个线程加入当前线程的子进程列表
-    t->wait = false;//新生成的子进程等待子进程状态为false
-  #endif
 
   /* Add to run queue. */
   thread_unblock (t);
@@ -472,17 +463,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-#ifdef USERPROG
-  list_init(&t->childrenlist);
-  sema_init(&t->diesem, 0);
-  sema_init(&t->loadsem, 0);
-  sema_init(&t->loadsuccesssem, 0);
-  sema_init(&t->waitsem, 0);
-  sema_init(&t->exitsem, 0);
-  sema_init(&t->filesem, 1);
-  sema_init(&t->jinsem, 0);
-  t->loadsuccess = true;
-#endif
+
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
