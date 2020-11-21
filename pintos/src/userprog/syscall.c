@@ -49,66 +49,66 @@ syscall_init (void)
 static void
 syscall_handler(struct intr_frame *f)
 {
-  if ((f->esp > PHYS_BASE) || (get_user((uint8_t *)f->esp) == -1))
+  if ((f->esp > PHYS_BASE) || (get_user((uint8_t *)f->esp) == -1))//不是用户空间
   {
-    thread_current()->returnstatus = -1;
-    thread_exit();
+    thread_current()->returnstatus = -1;//当前进程返回值为-1
+    thread_exit();//进程结束
   }
-  uint32_t num = *(uint32_t *)f->esp;
+  uint32_t num = *(uint32_t *)f->esp;//系统调用号
 
   switch (num)
   {
-  case SYS_HALT:
+  case SYS_HALT://强制停止
   {
-    shutdown_power_off();
+    shutdown_power_off();//断电
     break;
   }
-  case SYS_EXIT:
+  case SYS_EXIT://退出
   {
-    char *tempesp = (char *)f->esp;
-    tempesp += 4;
-    if (*(uint32_t *)tempesp < PHYS_BASE)
-      thread_current()->returnstatus = get_user((uint8_t *)tempesp);
+    char *tempesp = (char *)f->esp;//新栈指针
+    tempesp += 4;//新栈指针上移4位
+    if (*(uint32_t *)tempesp < PHYS_BASE)//如果此时栈指针还处于用户空间
+      thread_current()->returnstatus = get_user((uint8_t *)tempesp);//从栈帧处取出返回值
     else
-      thread_current()->returnstatus = -1;
-    thread_exit();
+      thread_current()->returnstatus = -1;//否则，返回值为-1
+    thread_exit();//进程结束
     break;
   }
-  case SYS_EXEC:
+  case SYS_EXEC://执行
   {
-    char *tempesp = (char *)f->esp;
-    tempesp += 4;
-    if (*(uint32_t *)tempesp > PHYS_BASE)
+    char *tempesp = (char *)f->esp;//新栈指针
+    tempesp += 4;//新栈指针上移4位
+    if (*(uint32_t *)tempesp > PHYS_BASE)//如果此时栈指针不在用户栈中
+    {
+      thread_current()->returnstatus = -1;//返回值-1
+      thread_exit();//进程退出
+    }
+    if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
-    if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))
-    {
-      thread_current()->returnstatus = -1;
-      thread_exit();
-    }
-    char *cmd_line;
+    char *cmd_line;//命令行
 
-    cmd_line = palloc_get_page(0);
+    cmd_line = palloc_get_page(0);//从页中获得命令行
 
-    if (cmd_line == NULL)
+    if (cmd_line == NULL)//如果命令行是空的
     {
-      f->eax = -1;
+      f->eax = -1;//存入返回值为空
       break;
       // return -1;
     }
-    strlcpy(cmd_line, *(char **)tempesp, PGSIZE);
+    strlcpy(cmd_line, *(char **)tempesp, PGSIZE);//拷贝命令行
 
     // lock_acquire(&handlesem);
     // struct file* openedfile = filesys_open(cmd_line);
     // lock_release(&handlesem);
 
-    int answer = (int)process_execute(cmd_line);
+    int answer = (int)process_execute(cmd_line);//运行进程
 
-    f->eax = answer;
+    f->eax = answer;//返回值是运行后的返回值
     // file_close(openedfile);
-    palloc_free_page(cmd_line);
+    palloc_free_page(cmd_line);//销毁命令行
 
     break;
   }
@@ -130,90 +130,90 @@ syscall_handler(struct intr_frame *f)
 
    Implementing this system call requires considerably more work than any of the rest.*/
 
-  case SYS_WAIT:
+  case SYS_WAIT://等待的系统调用
   {
-    char *tempesp = (char *)f->esp;
+    char *tempesp = (char *)f->esp;//新栈指针
 
-    tempesp += 4;
-    pid_t pid = *(pid_t *)tempesp;
+    tempesp += 4;//栈指针上移4位
+    pid_t pid = *(pid_t *)tempesp;//将pid从栈帧中取出
     // printf("pid : %d\n", pid);
     int answer = process_wait((tid_t)pid);
-    f->eax = answer;
+    f->eax = answer;//返回值是线程等待函数的返回值
     break;
   }
-  case SYS_CREATE:
+  case SYS_CREATE://新建
   {
-    char *tempesp = (char *)f->esp;
-    tempesp += 4;
-    if (*(uint32_t *)tempesp > PHYS_BASE)
+    char *tempesp = (char *)f->esp;//新栈指针
+    tempesp += 4;//新栈指针上移4位
+    if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
 
-    if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))
+    if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
-    bool answer = false;
-    if (*tempesp == '\0')
+    bool answer = false;//返回值默认false
+    if (*tempesp == '\0')//如果栈指针指向空字符串
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
     else
     {
-      char *file;
+      char *file;//文件指针
 
-      file = palloc_get_page(0);
-      if (file == NULL)
+      file = palloc_get_page(0);//文件指针分配一页内存
+      if (file == NULL)//如果没分配到
       {
-        f->eax = -1;
+        f->eax = -1;//返回-1
         break;
         // return -1;
       }
-      strlcpy(file, *(char **)tempesp, PGSIZE);
-      tempesp += 4;
-      unsigned initial_size = *(unsigned *)tempesp;
-      if ((strlen(file) <= 14) && (strlen(file) > 0))
+      strlcpy(file, *(char **)tempesp, PGSIZE);//文件页复制栈帧中的内容
+      tempesp += 4;//新栈指针上移4个字节
+      unsigned initial_size = *(unsigned *)tempesp;//初始化栈指针
+      if ((strlen(file) <= 14) && (strlen(file) > 0))//如果文件名长度<=14或者>=0
       {
         lock_acquire(&handlesem);
-        answer = filesys_create(file, initial_size);
+        answer = filesys_create(file, initial_size);//创建文件
         lock_release(&handlesem);
       }
-      palloc_free_page(file);
+      palloc_free_page(file);//释放页
     }
-    f->eax = answer;
+    f->eax = answer;//返回值
     barrier();
     break;
   }
-  case SYS_REMOVE:
+  case SYS_REMOVE://删除
   {
     char *tempesp = (char *)f->esp;
     tempesp += 4;
-    if (*(uint32_t *)tempesp > PHYS_BASE)
+    if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
       thread_exit();
-    char *file;
+    char *file;//文件名
 
-    file = palloc_get_page(0);
-    if (file == NULL)
+    file = palloc_get_page(0);//为这个指针分配一个页
+    if (file == NULL)//分配失败
     {
-      f->eax = -1;
+      f->eax = -1;//返回-1
       break;
       // return -1;
     }
     strlcpy(file, *(char **)tempesp, PGSIZE);
     lock_acquire(&handlesem);
-    bool answer = filesys_remove(file);
+    bool answer = filesys_remove(file);//删除文件
     lock_release(&handlesem);
 
-    f->eax = answer;
-    palloc_free_page(file);
+    f->eax = answer;//返回值
+    palloc_free_page(file);//释放页
     barrier();
     break;
   }
-  case SYS_OPEN:
+  case SYS_OPEN://打开文件
   {
     char *tempesp = (char *)f->esp;
     tempesp += 4;
@@ -230,10 +230,10 @@ syscall_handler(struct intr_frame *f)
       thread_exit();
       f->eax = -1;
     }
-    char *file;
+    char *file;//文件名
 
-    file = palloc_get_page(0);
-    if (file == NULL)
+    file = palloc_get_page(0);//为这个指针分配一个页
+    if (file == NULL)//分配失败
     {
       f->eax = -1;
       break;
@@ -241,13 +241,13 @@ syscall_handler(struct intr_frame *f)
     strlcpy(file, *(char **)tempesp, PGSIZE);
 
     lock_acquire(&handlesem);
-    struct file *openedfile = filesys_open(file);
+    struct file *openedfile = filesys_open(file);//找到要打开的文件指针
     lock_release(&handlesem);
     palloc_free_page(file);
     barrier();
 
     int fd;
-    if (openedfile == NULL)
+    if (openedfile == NULL)//没这玩意，返回-1
     {
       fd = -1;
       // palloc_free_page(file);
@@ -256,42 +256,41 @@ syscall_handler(struct intr_frame *f)
     else
     {
 
-      fd = thread_current()->nextfd;
-      if (fd >= 64)
+      fd = thread_current()->nextfd;//fd是当前进程下一个打开的文件
+      if (fd >= 64)//如果文件数>64
       {
-        fd = -1;
+        fd = -1;//返回值-1
         lock_acquire(&handlesem);
-        file_close(openedfile);
+        file_close(openedfile);//关闭打开文件
         lock_release(&handlesem);
       }
       else
       {
-        thread_current()->fdtable[fd] = openedfile;
-        thread_current()->nextfd++;
+        thread_current()->fdtable[fd] = openedfile;//当前进程打开的文件又多了一个
+        thread_current()->nextfd++;//指向下一个文件槽
       }
     }
     f->eax = fd;
     barrier();
     break;
   }
-  case SYS_FILESIZE:
+  case SYS_FILESIZE://文件大小
   {
-    char *tempesp = (char *)f->esp;
-    tempesp += 4;
+    char *tempesp = (char *)f->esp;//新栈指针
+    tempesp += 4;//新栈指针上移4位
     int fd = *(int *)tempesp;
-    struct file *filetoread = thread_current()->fdtable[fd];
+    struct file *filetoread = thread_current()->fdtable[fd];//找到这个文件
     int filesize;
-    if (filetoread == NULL)
+    if (filetoread == NULL)//没这玩意，返回-1
       filesize = -1;
     else
     {
-
       lock_acquire(&handlesem);
-      filesize = (int)(file_length(filetoread));
+      filesize = (int)(file_length(filetoread));//读取文件大小
       lock_release(&handlesem);
     }
 
-    f->eax = filesize;
+    f->eax = filesize;//返回大小值
     barrier();
     break;
   }
@@ -300,7 +299,7 @@ syscall_handler(struct intr_frame *f)
 	   Returns the number of bytes actually read (0 at end of file), or -1
 	   if the file could not be read (due to a condition other than end of file).
 	   Fd 0 reads from the keyboard using input_getc().*/
-  case SYS_READ:
+  case SYS_READ://读
   {
 
     char *tempesp = (char *)f->esp;
@@ -308,18 +307,18 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     int fd = *(int *)tempesp;
     tempesp += 4;
-    if ((fd < 0) || (fd > 64))
+    if ((fd < 0) || (fd > 64))//文件号不合法
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
-    if (*(uint32_t *)tempesp > PHYS_BASE)
+    if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
       thread_current()->returnstatus = -1;
       thread_exit();
     }
 
-    if ((get_user(*(uint8_t **)tempesp) == -1) || (tempesp == NULL))
+    if ((get_user(*(uint8_t **)tempesp) == -1) || (tempesp == NULL))//同上
     {
       thread_current()->returnstatus = -1;
       thread_exit();
