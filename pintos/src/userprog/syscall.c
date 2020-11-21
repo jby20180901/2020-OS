@@ -123,7 +123,7 @@ void SysWrite(struct intr_frame *f)
   int fd = (int)getArguments(f, 2);
   const char *buffer = (const char *)*(esp + 6);
   unsigned size = (size_t)getArguments(f, 3);
-  //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
+  printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
   putbuf(buffer, size);
   f->eax = 0;
 }
