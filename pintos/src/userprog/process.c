@@ -21,19 +21,19 @@
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
-int a = 0;
-struct thread *find_child(tid_t giventid)
+int a = 0;//
+struct thread *find_child(tid_t giventid)//寻找子进程
 {
-  struct list *templist = &thread_current()->childrenlist;
-  if (list_empty(templist))
-    return NULL;
+  struct list *templist = &thread_current()->childrenlist;//当前进程的子进程序列
+  if (list_empty(templist))//如果是空的
+    return NULL;//返回NULL
   struct list_elem *e;
   for (e = list_begin(templist); e != list_end(templist);
-       e = list_next(e))
+       e = list_next(e))//遍历
   {
     struct thread *t = list_entry(e, struct thread, child_elem);
     if (t->tid == giventid)
-      return t;
+      return t;//返回这个子进程
   }
   return NULL;
 }
@@ -55,23 +55,23 @@ tid_t process_execute(const char *file_name)
   strlcpy(fn_copy, file_name, PGSIZE);
 
   char *token, *save_ptr;
-  token = strtok_r(file_name, " ", &save_ptr);
+  token = strtok_r(file_name, " ", &save_ptr);//将文件名截断出来
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create(token, PRI_DEFAULT, start_process, fn_copy);
-  struct thread *child = find_child(tid);
-  sema_down(&child->loadsem);
-  bool child_load_success = child->loadsuccess;
-  sema_up(&child->loadsuccesssem);
+  tid = thread_create(token, PRI_DEFAULT, start_process, fn_copy);//生成子进程
+  struct thread *child = find_child(tid);//找到这个子进程
+  sema_down(&child->loadsem);//？？？？
+  bool child_load_success = child->loadsuccess;//？？？？
+  sema_up(&child->loadsuccesssem);//？？？？
   if (!child_load_success)
   {
     //For exec-missing case
-    sema_down(&child->exitsem);
-    return -1;
+    sema_down(&child->exitsem);//子进程进入EXIT序列
+    return -1;//返回-1
   }
   // printf("WWW %d \n",filenum);
-  if (tid == TID_ERROR)
-    palloc_free_page(fn_copy);
+  if (tid == TID_ERROR)//如果tid 是-1
+    palloc_free_page(fn_copy);//释放这个页面
   return tid;
 }
 
@@ -91,15 +91,15 @@ start_process(void *f_name)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load(file_name, &if_.eip, &if_.esp);
 
-  thread_current()->loadsuccess = success;
-  sema_up(&thread_current()->loadsem);
-  sema_down(&thread_current()->loadsuccesssem);
+  thread_current()->loadsuccess = success;//当前进程的加载码置为success
+  sema_up(&thread_current()->loadsem);//将当前进程从loadsem解放出来
+  sema_down(&thread_current()->loadsuccesssem);//将当前进程阻塞在loadsuccesssem
 
   // palloc_free_page (file_name);
   palloc_free_page(f_name);
   if (!success)
   {
-    thread_current()->returnstatus = -1;
+    thread_current()->returnstatus = -1;//失败了，返回值为-1
     thread_exit();
   }
 
@@ -133,39 +133,39 @@ int process_wait(tid_t child_tid)
 {
   // printf("WWW %d \n",filenum);
   // timer_sleep((int64_t)100);
-  struct thread *child = find_child(child_tid);
-  if (child == NULL)
+  struct thread *child = find_child(child_tid);//找到子进程
+  if (child == NULL)//如果没有子进程
   {
-    return -1;
+    return -1;//返回-1
   }
-  sema_down(&child->waitsem);
+  sema_down(&child->waitsem);//父进程阻塞在这个子进程的等待序列，等待子进程回收
 
   // printf("child name : %s\n", child->name);
 
-  if (child->wait)
+  if (child->wait)//如果子进程在等
   {
-    return -1;
+    return -1;//返回-1
   }
-  child->wait = true;
+  child->wait = true;//子进程等状态置为true
 
-  int exitstatus = child->returnstatus;
-  if (child->file != NULL)
+  int exitstatus = child->returnstatus;//退出状态是子进程的退出状态
+  if (child->file != NULL)//子进程打开文件不是空
   {
-    lock_acquire(&handlesem);
-    file_allow_write(child->file);
-    lock_release(&handlesem);
+    lock_acquire(&handlesem);//获得读写锁
+    file_allow_write(child->file);//允许写子进程当前操作的文件
+    lock_release(&handlesem);//释放读写锁
   }
-  sema_up(&child->diesem);
+  sema_up(&child->diesem);//子进程diesem释放
   // printf("ABOVE JIN\n");
-  sema_down(&child->jinsem);
+  sema_down(&child->jinsem);//阻塞在子进程的jinsem上
   // printf("BELOW JIN\n");
 
-  child->wait = false;
+  child->wait = false;//子进程等待撞他变为false
   barrier();
-  return exitstatus;
+  return exitstatus;//返回子进程的退出状态
 }
 
-int loop()
+int loop()//长时间循环函数 
 {
   int num = 100000, answer = 3, i;
   for (i = 0; i < num; i++)
@@ -183,7 +183,7 @@ void process_exit(void)
   /* Destroy the current process's page directory and switch back
 
 	   to the kernel-only page directory. */
-  pd = curr->pagedir;
+  pd = curr->pagedir;//当前页表
   if (pd != NULL)
   {
     /* Correct ordering here is crucial.  We must set
@@ -193,47 +193,47 @@ void process_exit(void)
 		   directory before destroying the process's page
 		   directory, or our active page directory will be one
 		   that's been freed (and cleared). */
-    curr->pagedir = NULL;
-    pagedir_activate(NULL);
-    pagedir_destroy(pd);
-    sema_up(&curr->exitsem);
+    curr->pagedir = NULL;//当前页表置为空
+    pagedir_activate(NULL);//活跃页表置为空
+    pagedir_destroy(pd);//销毁页表
+    sema_up(&curr->exitsem);//当前进程的退出信号量释放
   }
 
-  if (strcmp(curr->name, "main") != 0)
+  if (strcmp(curr->name, "main") != 0)//不是main函数
   {
-    printf("%s: exit(%d)\n", curr->name, curr->returnstatus);
+    printf("%s: exit(%d)\n", curr->name, curr->returnstatus);//输出退出状态
 
-    sema_up(&curr->waitsem);
-    sema_down(&curr->diesem);
-    list_remove(&curr->child_elem);
-    sema_up(&curr->jinsem);
+    sema_up(&curr->waitsem);//当前进程的等待信号释放
+    sema_down(&curr->diesem);//当前进程阻塞死亡序列
+    list_remove(&curr->child_elem);//把当前进程从父进程的子进程列表中移除
+    sema_up(&curr->jinsem);//jinsem释放
 
     // if(!list_empty(&curr->exitsem.waiters))
   }
-  else
+  else//是main函数
   {
-    sema_up(&curr->waitsem);
+    sema_up(&curr->waitsem); //当前进程的等待信号释放
   }
 
   int j;
-  for (j = 2; j < 64; j++)
+  for (j = 2; j < 64; j++)//遍历已打开的文件列表
   {
     struct file *ftoclose = curr->fdtable[j];
-    if (ftoclose != NULL)
+    if (ftoclose != NULL)//如果此时文件不是空
     {
       lock_acquire(&handlesem);
-      file_close(ftoclose);
+      file_close(ftoclose);//关闭这个文件
       lock_release(&handlesem);
-      filenum--;
+      filenum--;//文件数--
     }
   }
-  if (curr->file != NULL)
+  if (curr->file != NULL)//如果当前使用的文件不是空
   {
-    lock_acquire(&handlesem);
-    file_close(curr->file);
-    lock_release(&handlesem);
-    filenum--;
-    curr->file = NULL;
+    lock_acquire(&handlesem);//获得锁
+    file_close(curr->file);//关闭文件
+    lock_release(&handlesem);//释放锁
+    filenum--;//文件数--
+    curr->file = NULL;//当前使用的文件为空
   }
 
   barrier();
@@ -338,10 +338,10 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
   int i;
 
   /* Allocate and activate page directory. */
-  t->pagedir = pagedir_create();
-  if (t->pagedir == NULL)
-    goto done;
-  process_activate();
+  t->pagedir = pagedir_create();//新建页表
+  if (t->pagedir == NULL)//如果页表是空
+    goto done;//返回
+  process_activate();//进程激活
 
   char *fn_copy;
 
@@ -354,23 +354,23 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
   token = strtok_r(file_name, " ", &save_ptr);
 
   lock_acquire(&handlesem);
-  file = filesys_open(token);
+  file = filesys_open(token);//打开文件
   lock_release(&handlesem);
-  filenum++;
+  filenum++;//文件数++
 
-  if (file == NULL)
+  if (file == NULL)//文件是空
   {
 
     printf("load: %s: open failed\n", file_name);
     goto done;
   }
-  file_deny_write(file);
-  t->file = file;
+  file_deny_write(file);//禁止文件写
+  t->file = file;//当前进程的正在使用文件为这个文件
 
   /* Read and verify executable header. */
   if (file_read(file, &ehdr, sizeof ehdr) != sizeof ehdr || memcmp(ehdr.e_ident, "\177ELF\1\1\1", 7) || ehdr.e_type != 2 || ehdr.e_machine != 3 || ehdr.e_version != 1 || ehdr.e_phentsize != sizeof(struct Elf32_Phdr) || ehdr.e_phnum > 1024)
   {
-    printf("load: %s: error loading executable\n", file_name);
+    printf("load: %s: error loading executable\n", file_name);//读取文件失败
     goto done;
   }
 
@@ -578,34 +578,34 @@ setup_stack(void **esp, char *file_name)
     success = install_page(((uint8_t *)PHYS_BASE) - PGSIZE, kpage, true);
     if (success)
     {
-      *esp = PHYS_BASE;
-      uint8_t *jinesp = (uint8_t *)*esp;
+      *esp = PHYS_BASE;//esp指向物理基地址
+      uint8_t *jinesp = (uint8_t *)*esp;//jinesp = esp
       char *token, *token2, *save_ptr, *save_ptr2;
       int argc = 0, arglength = 1;
-      int jinjin = 0;
+      int jinjin = 0;//jinjin = 0
       for (token = strtok_r(file_name, " ", &save_ptr); token != NULL;
-           token = strtok_r(NULL, " ", &save_ptr))
+           token = strtok_r(NULL, " ", &save_ptr))//遍历参数表
       {
-        argc++;
-        arglength += (int)(strlen(token)) + 1;
+        argc++;//参数++
+        arglength += (int)(strlen(token)) + 1;//参数表长度++
       }
-      jinesp -= arglength;
-      jinesp -= (argc + 1) * 4;
-      jinesp -= 12;
-      *esp -= (arglength + 12 + (argc + 1) * 4);
+      jinesp -= arglength;//jinesp移动到要放入参数表的地方
+      jinesp -= (argc + 1) * 4;//参数表4字节
+      jinesp -= 12;//向下移动3字节
+      *esp -= (arglength + 12 + (argc + 1) * 4);//真正的esp向下移动
 
-      thread_current()->process_stack = (char *)*esp;
+      thread_current()->process_stack = (char *)*esp;//用户栈空间指向esp
 
       *(int *)jinesp = jinjin;
-      jinesp += 4;
+      jinesp += 4;//预先规定的0入栈
       *(int *)jinesp = argc;
-      jinesp += 4;
+      jinesp += 4;//参数个数入栈
       *(uint32_t *)jinesp = (uint32_t)(jinesp + 4);
-      jinesp += 4;
-      int temp = 4 * (argc + 1) + 1;
+      jinesp += 4;//栈指针入栈
+      int temp = 4 * (argc + 1) + 1;//交换？？？
       for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL;
            token2 = strtok_r(NULL, " ", &save_ptr2))
-      {
+      {//重新遍历参数表
         *(uint32_t *)jinesp = (uint32_t)(jinesp + temp);
         jinesp += temp;
         strlcpy((char *)jinesp, token2, (size_t)(strlen(token2) + 1));
