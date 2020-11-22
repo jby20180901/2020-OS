@@ -589,22 +589,22 @@ setup_stack(void **esp, char *file_name)
       *(int *)jinesp = argc;
       jinesp += 4;//参数个数入栈
       *(uint32_t *)jinesp = (uint32_t)(jinesp + 4);
-      jinesp += 4;//栈指针入栈
-      int temp = 4 * (argc + 1) + 1;//交换？？？
+      jinesp += 4;//参数表头地址入栈
+      int temp = 4 * (argc + 1) + 1;//整个参数表+尾部\0和缓冲0
       for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL;
            token2 = strtok_r(NULL, " ", &save_ptr2))
       {//重新遍历参数表
-        *(uint32_t *)jinesp = (uint32_t)(jinesp + temp);
-        jinesp += temp;
-        strlcpy((char *)jinesp, token2, (size_t)(strlen(token2) + 1));
-        jinesp -= temp;
-        jinesp += 4;
-        temp -= 4;
-        temp += strlen(token2) + 1;
+        *(uint32_t *)jinesp = (uint32_t)(jinesp + temp);//保存参数对应真实的地址
+        jinesp += temp;//栈指针上去
+        strlcpy((char *)jinesp, token2, (size_t)(strlen(token2) + 1));//将token复制到esp保存的地址指向的区域
+        jinesp -= temp;//栈指针回来
+        jinesp += 4;//栈指针+4
+        temp -= 4;//需要上去的地址数-4
+        temp += strlen(token2) + 1;//需要上去的地址数 加上刚刚的token长度
       }
-      *(int *)jinesp = jinjin;
-      uint8_t woowoo = (uint8_t)0;
-      jinesp += 4;
+      *(int *)jinesp = jinjin;//哨兵
+      uint8_t woowoo = (uint8_t)0;//word-align
+      jinesp += 4;//word-align入栈
       *jinesp = woowoo;
       // hex_dump (*esp, *esp, (size_t)(arglength+12+(argc+1)*4),true);
     }
