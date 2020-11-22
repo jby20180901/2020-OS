@@ -578,7 +578,7 @@ setup_stack(void **esp, char *file_name)
       newesp -= arglength;                       //newesp移动到要放入真实参数的地方
       newesp -= (argc + 1) * 4;                  //(参数总数+参数表头地址)*4字节
       newesp -= 12;                              //向下移动3字节，安全保障
-      *(uint8_t *)esp -= (arglength + 12 + (argc + 1) * 4); //真正的esp向下移动
+      *esp -= (arglength + 12 + (argc + 1) * 4); //真正的esp向下移动
 
       thread_current()->process_stack = (char *)*esp; //用户栈空间指向esp
 
