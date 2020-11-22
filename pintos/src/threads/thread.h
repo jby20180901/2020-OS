@@ -103,14 +103,14 @@ struct thread
     int nextfd;                         /* 下一个文件指针 */
     struct list childrenlist;           /* 子进程列表 */
     struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
-    struct semaphore loadsem;           /*  */
-    struct semaphore loadsuccesssem;    /*  */
-    struct semaphore waitsem;           /*  */
-    struct semaphore diesem;            /*  */
+    struct semaphore loadsem;           /* 子进程加载信号量 */
+    struct semaphore loadsuccesssem;    /* 子进程是否加载成功 */
+    struct semaphore waitsem;           /* 父进程等待子进程的信号量 */
+    struct semaphore diesem;            /* 进程死亡信号量 */
     struct semaphore exitsem;           /*  */
-    struct semaphore filesem;           /*  */
+    struct semaphore filesem;           /* 没用 */
     struct semaphore jinsem;            /*  */
-    bool loadsuccess;                   /* 是否load成功 */
+    bool loadsuccess;                   /* 是否load进程成功的标志 */
     struct file *file;                  /* 当前打开的文件 */
     bool wait;                          /* 是否在等待子进程 */
 #endif
