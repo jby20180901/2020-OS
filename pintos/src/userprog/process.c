@@ -135,16 +135,18 @@ int
 process_wait (tid_t child_tid UNUSED) 
 {
   struct thread *child = get_thread_by_tid(child_tid);
-  if (child == NULL || child->father_process != thread_current() || child->waited)
-  { //不存在这个进程,或者这个进程已经被杀死了,再或者这个进程压根就不是子进程
-    return -1;
-  }
-  else
-  {
-    child->waited = true;
-    thread_current()->wait_for = child;
-    sema_down(&child->child_sema);
-    return child->ret;
+  while(true){
+    if (child == NULL || child->father_process != thread_current() || child->waited)
+    { //不存在这个进程,或者这个进程已经被杀死了,再或者这个进程压根就不是子进程
+      return -1;
+    }
+    else
+    {
+      child->waited = true;
+      thread_current()->wait_for = child;
+      sema_down(&child->child_sema);
+      return child->ret;
+    }
   }
 }
 
@@ -154,7 +156,6 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
