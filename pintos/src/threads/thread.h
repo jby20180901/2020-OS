@@ -7,7 +7,7 @@
 #include "threads/synch.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
-
+#define USERPROG 1
 /* States in a thread's life cycle. */
 enum thread_status
   {
