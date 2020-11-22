@@ -99,7 +99,7 @@ start_process(void *f_name)
   palloc_free_page(f_name);
   if (!success)
   {
-    thread_current()->returnstatus = -1;//失败了，返回值为-1
+    thread_current()->ret = -1;//失败了，返回值为-1
     thread_exit();
   }
 
@@ -148,7 +148,7 @@ int process_wait(tid_t child_tid)
   }
   child->wait = true;//子进程等状态置为true
 
-  int exitstatus = child->returnstatus;//退出状态是子进程的退出状态
+  int exitstatus = child->ret;//退出状态是子进程的退出状态
   if (child->file != NULL)//子进程打开文件不是空
   {
     lock_acquire(&handlesem);//获得读写锁
@@ -201,7 +201,7 @@ void process_exit(void)
 
   if (strcmp(curr->name, "main") != 0)//不是main函数
   {
-    printf("%s: exit(%d)\n", curr->name, curr->returnstatus);//输出退出状态
+    printf("%s: exit(%d)\n", curr->name, curr->ret);//输出退出状态
 
     sema_up(&curr->waitsem);//当前进程的等待信号释放
     sema_down(&curr->diesem);//当前进程阻塞死亡序列
