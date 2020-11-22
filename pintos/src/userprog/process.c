@@ -344,7 +344,7 @@ bool load(const char *file_name, void (**eip)(void), void **esp)//加载
   lock_acquire(&handlesem);
   file = filesys_open(token);//打开文件
   lock_release(&handlesem);
-  filenum++;//文件数++
+  filenum++;//打开的文件数++
 
   if (file == NULL)//文件是空
   {
@@ -568,24 +568,24 @@ setup_stack(void **esp, char *file_name)
     {
       *esp = PHYS_BASE;//esp指向物理基地址
       uint8_t *jinesp = (uint8_t *)*esp;//jinesp = esp
-      char *token, *token2, *save_ptr, *save_ptr2;
-      int argc = 0, arglength = 1;
-      int jinjin = 0;//jinjin = 0
+      char *token, *token2, *save_ptr, *save_ptr2;//划分文件
+      int argc = 0, arglength = 1;//参数个数0，参数表长度1
+      int jinjin = 0;//规定的置0位
       for (token = strtok_r(file_name, " ", &save_ptr); token != NULL;
            token = strtok_r(NULL, " ", &save_ptr))//遍历参数表
       {
         argc++;//参数++
-        arglength += (int)(strlen(token)) + 1;//参数表长度++
+        arglength += (int)(strlen(token)) + 1;//参数表字节长度++
       }
-      jinesp -= arglength;//jinesp移动到要放入参数表的地方
-      jinesp -= (argc + 1) * 4;//参数表4字节
-      jinesp -= 12;//向下移动3字节
+      jinesp -= arglength;//jinesp移动到要放入真实参数的地方
+      jinesp -= (argc + 1) * 4;//(参数总数+参数表头地址)*4字节
+      jinesp -= 12;//向下移动3字节，安全保障
       *esp -= (arglength + 12 + (argc + 1) * 4);//真正的esp向下移动
 
       thread_current()->process_stack = (char *)*esp;//用户栈空间指向esp
 
       *(int *)jinesp = jinjin;
-      jinesp += 4;//预先规定的0入栈
+      jinesp += 4;//返回值，此时是0，入栈
       *(int *)jinesp = argc;
       jinesp += 4;//参数个数入栈
       *(uint32_t *)jinesp = (uint32_t)(jinesp + 4);
