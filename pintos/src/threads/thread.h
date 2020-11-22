@@ -99,19 +99,20 @@ struct thread
     uint32_t *pagedir;                  /* Page directory. */
     char *process_stack;                /* 用户栈 */
     int ret;                   /* 返回值 */
-    int wait_for;              //正在等待的子进程
+    int wait_for; //正在等待的子进程
     struct semaphore child_sema; //等待子进程的信号量
 
-    struct thread *father_process; //父进程
-    struct list_elem child_of;     //用来放在父进程的子进程列表中
+    struct thread* father_process;//父进程
+    struct list_elem child_of;//用来放在父进程的子进程列表中
 
-    struct list list_opened_file; /* 已打开的文件列表 */
+    struct list list_opened_file;
     int max_fd;
 
-    bool waited;                        //这个进程是否已经被别人给wait了
-
+    bool waited;//这个进程是否已经被别人给wait了
+    struct file *fdtable[64];           /* 已打开的文件列表 */
     int nextfd;                         /* 下一个文件指针 */
     struct list childrenlist;           /* 子进程列表 */
+    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
     struct semaphore loadsem;           /*  */
     struct semaphore loadsuccesssem;    /*  */
     struct semaphore waitsem;           /*  */
@@ -121,6 +122,7 @@ struct thread
     struct semaphore jinsem;            /*  */
     bool loadsuccess;                   /* 是否load成功 */
     struct file *file;                  /* 当前打开的文件 */
+    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */
