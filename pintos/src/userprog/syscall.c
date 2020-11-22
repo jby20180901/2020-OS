@@ -116,8 +116,8 @@ void SysExit(struct intr_frame *f)
 void SysWrite(struct intr_frame *f)
 {
   int *esp = f->esp;
-  int fd = (int)getArguments(f, 2);
-  const char *buffer = (const char *)*(esp + 6);
+  int fd = (int)getArguments(f, 1);
+  const char *buffer = *((const char **)esp + 8);
   unsigned size = (size_t)getArguments(f, 3);
   //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
   putbuf(buffer, size);
@@ -128,7 +128,7 @@ void SysWrite(struct intr_frame *f)
 /*char* file_name, unsigned initial_size*/
 void SysCreate(struct intr_frame *f)
 {
-  const char *file_name = (char *)getArguments(f, 4);
+  const char *file_name = (char *)getArguments(f, 1);
   validateAddr(file_name);
   unsigned initial_size = getArguments(f, 2);
   //printf("file_name:%s\n", file_name);
