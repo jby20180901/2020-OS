@@ -50,7 +50,7 @@ syscall_handler(struct intr_frame *f)
 {
   if ((f->esp > PHYS_BASE) || (get_user((uint8_t *)f->esp) == -1))//不是用户空间
   {
-    thread_current()->returnstatus = -1;//当前进程返回值为-1
+    thread_current()->ret = -1;//当前进程返回值为-1
     thread_exit();//进程结束
   }
   uint32_t num = *(uint32_t *)f->esp;//系统调用号
@@ -67,9 +67,9 @@ syscall_handler(struct intr_frame *f)
     char *tempesp = (char *)f->esp;//新栈指针
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp < PHYS_BASE)//如果此时栈指针还处于用户空间
-      thread_current()->returnstatus = get_user((uint8_t *)tempesp);//从栈帧处取出返回值
+      thread_current()->ret = get_user((uint8_t *)tempesp);//从栈帧处取出返回值
     else
-      thread_current()->returnstatus = -1;//否则，返回值为-1
+      thread_current()->ret = -1;//否则，返回值为-1
     thread_exit();//进程结束
     break;
   }
@@ -79,12 +79,12 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp > PHYS_BASE)//如果此时栈指针不在用户栈中
     {
-      thread_current()->returnstatus = -1;//返回值-1
+      thread_current()->ret = -1;//返回值-1
       thread_exit();//进程退出
     }
     if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     char *cmd_line;//命令行
@@ -146,19 +146,19 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
 
     if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     bool answer = false;//返回值默认false
     if (*tempesp == '\0')//如果栈指针指向空字符串
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     else
@@ -218,14 +218,14 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if (*(uint32_t *)tempesp > PHYS_BASE)
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
       f->eax = -1;
     }
 
     if ((get_user(*(uint8_t **)tempesp) == -1) || (*tempesp == NULL))
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
       f->eax = -1;
     }
@@ -308,18 +308,18 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if ((fd < 0) || (fd > 64))//文件号不合法
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
 
     if ((get_user(*(uint8_t **)tempesp) == -1) || (tempesp == NULL))//同上
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     char *buffer;
@@ -377,7 +377,7 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if (*(uint32_t *)tempesp > PHYS_BASE)
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
 
@@ -400,22 +400,22 @@ syscall_handler(struct intr_frame *f)
     {
       if (fd <= 0)
       {
-        thread_current()->returnstatus = -1;
+        thread_current()->ret = -1;
         thread_exit();
       }
       else if (fd > sizeof(thread_current()->fdtable) / sizeof(struct file *))
       {
-        thread_current()->returnstatus = -1;
+        thread_current()->ret = -1;
         thread_exit();
       }
       else if (thread_current()->fdtable[fd] == NULL)
       {
-        thread_current()->returnstatus = -1;
+        thread_current()->ret = -1;
         thread_exit();
       }
       else if ((get_user((uint8_t *)buffer) == -1) || (buffer == NULL))
       {
-        thread_current()->returnstatus = -1;
+        thread_current()->ret = -1;
         thread_exit();
       }
 
@@ -474,7 +474,7 @@ syscall_handler(struct intr_frame *f)
     int fd = *(int *)tempesp;
     if ((fd < 0) || (fd > 64))
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
 
@@ -489,7 +489,7 @@ syscall_handler(struct intr_frame *f)
     }
     else
     {
-      thread_current()->returnstatus = -1;
+      thread_current()->ret = -1;
       thread_exit();
     }
     barrier();

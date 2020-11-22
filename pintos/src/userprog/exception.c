@@ -148,14 +148,14 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-  if(!user)
+  if(!user)//关于页错误正确返回
   {
     f->eip=f->eax;
     f->eax =0xffffffff;
     return;
   }
-  thread_current()->returnstatus=-1;
-  thread_exit();
+  thread_current()->ret=-1;
+  thread_exit();//关于页错误正确返回
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */

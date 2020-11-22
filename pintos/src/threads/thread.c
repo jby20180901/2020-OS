@@ -101,7 +101,7 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();
 
   #ifdef USERPROG
-    lock_init(&handlesem);//初始化handlesem锁
+    lock_init(&handlesem);//初始化读写锁
   #endif
 }
 

@@ -42,7 +42,7 @@ struct thread *find_child(tid_t giventid)//寻找子进程
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
    thread id, or TID_ERROR if the thread cannot be created. */
-tid_t process_execute(const char *file_name)
+tid_t process_execute(const char *file_name)//父进程创建子进程
 {
   char *fn_copy;
   tid_t tid;
@@ -60,13 +60,13 @@ tid_t process_execute(const char *file_name)
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create(token, PRI_DEFAULT, start_process, fn_copy);//生成子进程
   struct thread *child = find_child(tid);//找到这个子进程
-  sema_down(&child->loadsem);//？？？？
-  bool child_load_success = child->loadsuccess;//？？？？
-  sema_up(&child->loadsuccesssem);//？？？？
-  if (!child_load_success)
+  sema_down(&child->loadsem);//等待子进程加载完毕
+  bool child_load_success = child->loadsuccess;//此时子进程加载完毕
+  sema_up(&child->loadsuccesssem);//把子进程从子进程加载成功信号量释放出来
+  if (!child_load_success)//如果子进程没加载成功
   {
     //For exec-missing case
-    sema_down(&child->exitsem);//子进程进入EXIT序列
+    sema_down(&child->exitsem);//当前进程阻塞在子进程退出信号量，等待子进程退出
     return -1;//返回-1
   }
   // printf("WWW %d \n",filenum);
@@ -78,7 +78,7 @@ tid_t process_execute(const char *file_name)
 /* A thread function that loads a user process and makes it start
    running. */
 static void
-start_process(void *f_name)
+start_process(void *f_name)//进程开始运行
 {
   char *file_name = f_name;
   struct intr_frame if_;
@@ -91,15 +91,15 @@ start_process(void *f_name)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load(file_name, &if_.eip, &if_.esp);
 
-  thread_current()->loadsuccess = success;//当前进程的加载码置为success
-  sema_up(&thread_current()->loadsem);//将当前进程从loadsem解放出来
-  sema_down(&thread_current()->loadsuccesssem);//将当前进程阻塞在loadsuccesssem
+  thread_current()->loadsuccess = success;//当前进程的加载状态success
+  sema_up(&thread_current()->loadsem);//作为子进程，我已经加载成功了，释放等待我加载的父进程
+  sema_down(&thread_current()->loadsuccesssem);//当前进程阻塞在loadsuccesssem上，等待父进程确认自己的加载状态
 
   // palloc_free_page (file_name);
-  palloc_free_page(f_name);
+  palloc_free_page(f_name);//清空页
   if (!success)
   {
-    thread_current()->returnstatus = -1;//失败了，返回值为-1
+    thread_current()->ret = -1;//失败了，返回值为-1
     thread_exit();
   }
 
@@ -129,7 +129,7 @@ start_process(void *f_name)
    immediately, without waiting.
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
-int process_wait(tid_t child_tid)
+int process_wait(tid_t child_tid)//父进程等待子进程
 {
   // printf("WWW %d \n",filenum);
   // timer_sleep((int64_t)100);
@@ -148,35 +148,23 @@ int process_wait(tid_t child_tid)
   }
   child->wait = true;//子进程等状态置为true
 
-  int exitstatus = child->returnstatus;//退出状态是子进程的退出状态
+  int exitstatus = child->ret;//退出状态是子进程的退出状态
   if (child->file != NULL)//子进程打开文件不是空
   {
     lock_acquire(&handlesem);//获得读写锁
     file_allow_write(child->file);//允许写子进程当前操作的文件
     lock_release(&handlesem);//释放读写锁
   }
-  sema_up(&child->diesem);//子进程diesem释放
-  // printf("ABOVE JIN\n");
-  sema_down(&child->jinsem);//阻塞在子进程的jinsem上
-  // printf("BELOW JIN\n");
+  sema_up(&child->diesem);//把子进程从死亡信号量上释放，继续它的回收操作
+  sema_down(&child->jinsem);//阻塞在子进程的jinsem上，等待子进程将自身从父进程列表中删除
 
-  child->wait = false;//子进程等待撞他变为false
+  child->wait = false;//子进程等待撞态变为false
   barrier();
   return exitstatus;//返回子进程的退出状态
 }
 
-int loop()//长时间循环函数 
-{
-  int num = 100000, answer = 3, i;
-  for (i = 0; i < num; i++)
-  {
-    answer += i;
-  }
-  return answer;
-}
-
 /* Free the current process's resources. */
-void process_exit(void)
+void process_exit(void)//进程销毁，回收资源
 {
   struct thread *curr = thread_current();
   uint32_t *pd;
@@ -196,17 +184,17 @@ void process_exit(void)
     curr->pagedir = NULL;//当前页表置为空
     pagedir_activate(NULL);//活跃页表置为空
     pagedir_destroy(pd);//销毁页表
-    sema_up(&curr->exitsem);//当前进程的退出信号量释放
+    sema_up(&curr->exitsem);//等待当前进程退出的进程释放
   }
 
   if (strcmp(curr->name, "main") != 0)//不是main函数
   {
-    printf("%s: exit(%d)\n", curr->name, curr->returnstatus);//输出退出状态
+    printf("%s: exit(%d)\n", curr->name, curr->ret);//输出退出状态
 
     sema_up(&curr->waitsem);//当前进程的等待信号释放
-    sema_down(&curr->diesem);//当前进程阻塞死亡序列
+    sema_down(&curr->diesem);//当前进程阻塞死亡序列，等待它的父进程来回收它
     list_remove(&curr->child_elem);//把当前进程从父进程的子进程列表中移除
-    sema_up(&curr->jinsem);//jinsem释放
+    sema_up(&curr->jinsem);//释放等待自己操作的父进程
 
     // if(!list_empty(&curr->exitsem.waiters))
   }
@@ -242,12 +230,12 @@ void process_exit(void)
 /* Sets up the CPU for running user code in the current
    thread.
    This function is called on every context switch. */
-void process_activate(void)
+void process_activate(void)//程序活跃
 {
   struct thread *t = thread_current();
 
   /* Activate thread's page tables. */
-  pagedir_activate(t->pagedir);
+  pagedir_activate(t->pagedir);//页表活跃
 
   /* Set thread's kernel stack for use in processing
 	   interrupts. */
@@ -328,7 +316,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 
-bool load(const char *file_name, void (**eip)(void), void **esp)
+bool load(const char *file_name, void (**eip)(void), void **esp)//加载
 {
   struct thread *t = thread_current();
   struct Elf32_Ehdr ehdr;
@@ -345,13 +333,13 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
 
   char *fn_copy;
 
-  fn_copy = palloc_get_page(0);
-  if (fn_copy == NULL)
+  fn_copy = palloc_get_page(0);//获得一个页
+  if (fn_copy == NULL)//分配失败
     return TID_ERROR;
   strlcpy(fn_copy, file_name, PGSIZE);
   /* Open executable file. */
   char *token, *save_ptr;
-  token = strtok_r(file_name, " ", &save_ptr);
+  token = strtok_r(file_name, " ", &save_ptr);//获取文件名
 
   lock_acquire(&handlesem);
   file = filesys_open(token);//打开文件
