@@ -134,13 +134,74 @@ void SysExit(struct intr_frame *f)
 void SysWrite(struct intr_frame *f)
 {
   int *esp = f->esp;
-  int fd = (int)getArguments(f, 2);
-  const char *buffer = (const char *)*(esp + 6);
+  int fd = (int)getArguments(f, 1);
+  const char *buffer = (const char *)*(esp + 8);
   unsigned size = (size_t)getArguments(f, 3);
   //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
   putbuf(buffer, size);
   f->eax = 0;
 }
+
+//   case SYS_WRITE:
+//   {
+//     char *tempesp = (char *)f->esp;
+
+//     tempesp += 4;
+//     int fd = *(int *)tempesp;
+//     tempesp += 4;
+//     if (*(uint32_t *)tempesp > PHYS_BASE)
+//     {
+//       thread_current()->returnstatus = -1;
+//       thread_exit();
+//     }
+
+//     char *buffer = *(char **)tempesp;
+//     tempesp += 4;
+//     unsigned size = *(unsigned *)tempesp, temp;
+//     if (fd == 1)
+//     {
+
+//       while (size > 100)
+//       {
+//         putbuf(buffer, 100);
+//         buffer += 100;
+//         size -= 100;
+//         barrier();
+//       }
+//       putbuf(buffer, size);
+//     }
+//     else
+//     {
+//       if (fd <= 0)
+//       {
+//         thread_current()->returnstatus = -1;
+//         thread_exit();
+//       }
+//       else if (fd > sizeof(thread_current()->fdtable) / sizeof(struct file *))
+//       {
+//         thread_current()->returnstatus = -1;
+//         thread_exit();
+//       }
+//       else if (thread_current()->fdtable[fd] == NULL)
+//       {
+//         thread_current()->returnstatus = -1;
+//         thread_exit();
+//       }
+//       else if ((get_user((uint8_t *)buffer) == -1) || (buffer == NULL))
+//       {
+//         thread_current()->returnstatus = -1;
+//         thread_exit();
+//       }
+
+//       struct file *filetowrite = thread_current()->fdtable[fd];
+//       lock_acquire(&handlesem);
+//       off_t writebytes = file_write(filetowrite, (void *)buffer, (off_t)size);
+//       lock_release(&handlesem);
+//       f->eax = (int)writebytes;
+//     }
+//     barrier();
+//     break;
+//   }
 
 // static void
 // syscall_handler(struct intr_frame *f)
