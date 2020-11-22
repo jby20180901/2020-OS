@@ -33,9 +33,9 @@ Functionality of system calls:
 5	exec-multiple
 5	exec-arg
 
-- Test "wait" system call.
-5	wait-simple
-5	wait-twice
+- Test "waited" system call.
+5	waited-simple
+5	waited-twice
 
 - Test "exit" system call.
 5	exit

@@ -268,7 +268,7 @@ identify_ata_device (struct ata_disk *d)
 
   ASSERT (d->is_ata);
 
-  /* Send the IDENTIFY DEVICE command, wait for an interrupt
+  /* Send the IDENTIFY DEVICE command, waited for an interrupt
      indicating the device's response is ready, and read the data
      into our buffer. */
   select_device_wait (d);
@@ -492,7 +492,7 @@ select_device (const struct ata_disk *d)
   timer_nsleep (400);
 }
 
-/* Select disk D in its channel, as select_device(), but wait for
+/* Select disk D in its channel, as select_device(), but waited for
    the channel to become idle before and after. */
 static void
 select_device_wait (const struct ata_disk *d) 

@@ -203,8 +203,8 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
   #ifdef USERPROG
-    list_push_back(&thread_current()->childrenlist, &t->child_elem);//把这个线程加入当前线程的子进程列表
-    t->wait = false;//新生成的子进程等待子进程状态为false
+    list_push_back(&thread_current()->childrenlist, &t->child_of);//把这个线程加入当前线程的子进程列表
+    t->waited = false;//新生成的子进程等待子进程状态为false
   #endif
 
   /* Add to run queue. */
@@ -407,7 +407,7 @@ idle (void *idle_started_ UNUSED)
       intr_disable ();
       thread_block ();
 
-      /* Re-enable interrupts and wait for the next one.
+      /* Re-enable interrupts and waited for the next one.
 
          The `sti' instruction disables interrupts until the
          completion of the next instruction, so these two
@@ -477,7 +477,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init(&t->diesem, 0);
   sema_init(&t->loadsem, 0);
   sema_init(&t->loadsuccesssem, 0);
-  sema_init(&t->waitsem, 0);
+  sema_init(&t->child_sema, 0);
   sema_init(&t->exitsem, 0);
   sema_init(&t->filesem, 1);
   sema_init(&t->jinsem, 0);

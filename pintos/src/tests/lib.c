@@ -97,9 +97,9 @@ wait_children (pid_t pids[], size_t child_cnt)
   
   for (i = 0; i < child_cnt; i++) 
     {
-      int status = wait (pids[i]);
+      int status = waited (pids[i]);
       CHECK (status == (int) i,
-             "wait for child %zu of %zu returned %d (expected %zu)",
+             "waited for child %zu of %zu returned %d (expected %zu)",
              i + 1, child_cnt, status, i);
     }
 }

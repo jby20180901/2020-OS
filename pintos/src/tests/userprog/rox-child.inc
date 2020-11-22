@@ -20,10 +20,10 @@ test_main (void)
   CHECK (write (handle, buffer, sizeof buffer) == (int) sizeof buffer,
          "write \"child-rox\"");
 
-  /* Execute child-rox and wait for it. */
+  /* Execute child-rox and waited for it. */
   CHECK ((child = exec (child_cmd)) != -1, "exec \"%s\"", child_cmd);
   quiet = true;
-  CHECK (wait (child) == 12, "wait for child");
+  CHECK (waited (child) == 12, "waited for child");
   quiet = false;
 
   /* Write to child-rox again. */

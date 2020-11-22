@@ -17,5 +17,5 @@ test_main (void)
            "exec \"child-linear\"");
 
   for (i = 0; i < CHILD_CNT; i++) 
-    CHECK (wait (children[i]) == 0x42, "wait for child %d", i);
+    CHECK (waited (children[i]) == 0x42, "waited for child %d", i);
 }

@@ -607,7 +607,7 @@ some information about possible deadlock situations, etc.
 
 @deftypefn {System Call} void exit (int @var{status})
 Terminates the current user program, returning @var{status} to the
-kernel.  If the process's parent @code{wait}s for it (see below), this
+kernel.  If the process's parent @code{waited}s for it (see below), this
 is the status
 that will be returned.  Conventionally, a @var{status} of 0 indicates
 success and nonzero values indicate errors.
@@ -623,19 +623,19 @@ knows whether the child process successfully loaded its executable.
 You must use appropriate synchronization to ensure this.
 @end deftypefn
 
-@deftypefn {System Call} int wait (pid_t @var{pid})
+@deftypefn {System Call} int waited (pid_t @var{pid})
 Waits for a child process @var{pid} and retrieves the child's exit status.
 
 If @var{pid} is still alive, waits until it terminates.  Then, returns
 the status that @var{pid} passed to @code{exit}.  If @var{pid} did not
 call @code{exit()}, but was terminated by the kernel (e.g.@: killed
-due to an exception), @code{wait(pid)} must return -1.  It is perfectly
-legal for a parent process to wait for child processes that have already
-terminated by the time the parent calls @code{wait}, but the kernel must
+due to an exception), @code{waited(pid)} must return -1.  It is perfectly
+legal for a parent process to waited for child processes that have already
+terminated by the time the parent calls @code{waited}, but the kernel must
 still allow the parent to retrieve its child's exit status, or learn
 that the child was terminated by the kernel.
 
-@code{wait} must fail and return -1 immediately if any of the
+@code{waited} must fail and return -1 immediately if any of the
 following conditions is true:
 @itemize @bullet
 @item
@@ -645,18 +645,18 @@ only if the calling process received @var{pid} as a return value
 from a successful call to @code{exec}.
 
 Note that children are not inherited: if @var{A} spawns child @var{B}
-and @var{B} spawns child process @var{C}, then @var{A} cannot wait for
-@var{C}, even if @var{B} is dead.  A call to @code{wait(C)} by process
+and @var{B} spawns child process @var{C}, then @var{A} cannot waited for
+@var{C}, even if @var{B} is dead.  A call to @code{waited(C)} by process
 @var{A} must fail.  Similarly, orphaned processes are not assigned to
 a new parent if their parent process exits before they do.
 
 @item
-The process that calls @code{wait} has already called @code{wait} on
-@var{pid}.  That is, a process may wait for any given child at most
+The process that calls @code{waited} has already called @code{waited} on
+@var{pid}.  That is, a process may waited for any given child at most
 once.
 @end itemize
 
-Processes may spawn any number of children, wait for them in any order,
+Processes may spawn any number of children, waited for them in any order,
 and may even exit without having waited for some or all of their children.
 Your design should consider all the ways in which waits can occur.
 All of a process's resources, including its @struct{thread}, must be
@@ -668,7 +668,7 @@ process exits.  The supplied Pintos code tries to do this by calling
 @func{process_wait} (in @file{userprog/process.c}) from @func{main}
 (in @file{threads/init.c}).  We suggest that you implement
 @func{process_wait} according to the comment at the top of the
-function and then implement the @code{wait} system call in terms of
+function and then implement the @code{waited} system call in terms of
 @func{process_wait}.
 
 Implementing this system call requires considerably more work than any
@@ -934,7 +934,7 @@ process running in it (if created with @func{process_execute}) or not
 in the kernel.
 
 A @code{pid_t} identifies a user process.  It is used by user
-processes and the kernel in the @code{exec} and @code{wait} system
+processes and the kernel in the @code{exec} and @code{waited} system
 calls.
 
 You can choose whatever suitable types you like for @code{tid_t} and

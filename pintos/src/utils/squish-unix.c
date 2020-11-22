@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/waited.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <termios.h>

@@ -1,5 +1,5 @@
-/* Child process run by exec-multiple, exec-one, wait-simple, and
-   wait-twice tests.
+/* Child process run by exec-multiple, exec-one, waited-simple, and
+   waited-twice tests.
    Just prints a single message and terminates. */
 
 #include <stdio.h>

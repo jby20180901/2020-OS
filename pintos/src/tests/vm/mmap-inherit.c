@@ -20,10 +20,10 @@ test_main (void)
   if (memcmp (actual, sample, strlen (sample)))
     fail ("read of mmap'd file reported bad data");
 
-  /* Spawn child and wait. */
+  /* Spawn child and waited. */
   CHECK ((child = exec ("child-inherit")) != -1, "exec \"child-inherit\"");
   quiet = true;
-  CHECK (wait (child) == -1, "wait for child (should return -1)");
+  CHECK (waited (child) == -1, "waited for child (should return -1)");
   quiet = false;
 
   /* Verify data again. */

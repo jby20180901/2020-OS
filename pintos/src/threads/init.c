@@ -353,7 +353,7 @@ usage (void)
           "Actions are executed in the order specified.\n"
           "\nAvailable actions:\n"
 #ifdef USERPROG
-          "  run 'PROG [ARG...]' Run PROG and wait for it to complete.\n"
+          "  run 'PROG [ARG...]' Run PROG and waited for it to complete.\n"
 #else
           "  run TEST           Run TEST.\n"
 #endif

@@ -665,7 +665,7 @@ that manipulate it atomically, which are:
 
 @itemize @bullet
 @item
-``Down'' or ``P'': wait for the value to become positive, then
+``Down'' or ``P'': waited for the value to become positive, then
 decrement it.
 
 @item
@@ -673,9 +673,9 @@ decrement it.
 if any).
 @end itemize
 
-A semaphore initialized to 0 may be used to wait for an event
+A semaphore initialized to 0 may be used to waited for an event
 that will happen exactly once.  For example, suppose thread @var{A}
-starts another thread @var{B} and wants to wait for @var{B} to signal
+starts another thread @var{B} and wants to waited for @var{B} to signal
 that some activity is complete.  @var{A} can create a semaphore
 initialized to 0, pass it to @var{B} as it starts it, and then
 ``down'' the semaphore.  When @var{B} finishes its activity, it
@@ -798,11 +798,11 @@ monitor''.  While in the monitor, the thread has control over all the
 protected data, which it may freely examine or modify.  When access to
 the protected data is complete, it releases the monitor lock.
 
-Condition variables allow code in the monitor to wait for a condition to
+Condition variables allow code in the monitor to waited for a condition to
 become true.  Each condition variable is associated with an abstract
 condition, e.g.@: ``some data has arrived for processing'' or ``over 10
 seconds has passed since the user's last keystroke''.  When code in the
-monitor needs to wait for a condition to become true, it ``waits'' on
+monitor needs to waited for a condition to become true, it ``waits'' on
 the associated condition variable, which releases the lock and waits for
 the condition to be signaled.  If, on the other hand, it has caused one
 of these conditions to become true, it ``signals'' the condition to wake
@@ -829,9 +829,9 @@ Atomically releases @var{lock} (the monitor lock) and waits for
 @var{cond} is signaled, reacquires @var{lock} before returning.
 @var{lock} must be held before calling this function.
 
-Sending a signal and waking up from a wait are not an atomic operation.
+Sending a signal and waking up from a waited are not an atomic operation.
 Thus, typically @func{cond_wait}'s caller must recheck the condition
-after the wait completes and, if necessary, wait again.  See the next
+after the waited completes and, if necessary, waited again.  See the next
 section for an example.
 @end deftypefun
 
@@ -939,7 +939,7 @@ while (loops-- > 0)
 @end example
 
 @noindent
-The goal of this loop is to busy-wait by counting @code{loops} down
+The goal of this loop is to busy-waited by counting @code{loops} down
 from its original value to 0.  Without the barrier, the compiler could
 delete the loop entirely, because it produces no useful output and has
 no side effects.  The barrier forces the compiler to pretend that the

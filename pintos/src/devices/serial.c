@@ -115,7 +115,7 @@ serial_putc (uint8_t byte)
       if (old_level == INTR_OFF && intq_full (&txq)) 
         {
           /* Interrupts are off and the transmit queue is full.
-             If we wanted to wait for the queue to empty,
+             If we wanted to waited for the queue to empty,
              we'd have to reenable interrupts.
              That's impolite, so we'll send a character via
              polling instead. */

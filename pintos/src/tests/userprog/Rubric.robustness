@@ -34,10 +34,10 @@ Robustness of system calls:
 5	sc-boundary
 5	sc-boundary-2
 
-- Test robustness of "exec" and "wait" system calls.
+- Test robustness of "exec" and "waited" system calls.
 5	exec-missing
-5	wait-bad-pid
-5	wait-killed
+5	waited-bad-pid
+5	waited-killed
 
 - Test robustness of exception handling.
 1	bad-read

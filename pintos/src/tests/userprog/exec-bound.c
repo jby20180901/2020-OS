@@ -8,5 +8,5 @@
 void
 test_main (void) 
 {
-  wait (exec (copy_string_across_boundary("child-args arg1 arg2")));
+  waited (exec (copy_string_across_boundary("child-args arg1 arg2")));
 }

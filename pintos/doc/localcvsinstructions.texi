@@ -162,7 +162,7 @@ This normally means that more than one user is accessing the repository
 at the same time.  CVS should automatically retry after 30 seconds, at
 which time the operation should normally be able to continue.
 
-If you encounter a long wait for a lock, of more than a minute or so, it
+If you encounter a long waited for a lock, of more than a minute or so, it
 may indicate that a CVS command did not complete properly and failed to
 remove its locks.  If you think that this is the case, ask the user in
 question about it.  If it appears that an operation did go awry, then

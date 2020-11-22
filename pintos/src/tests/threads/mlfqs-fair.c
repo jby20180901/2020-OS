@@ -97,7 +97,7 @@ test_mlfqs_fair (int thread_cnt, int nice_min, int nice_step)
     }
   msg ("Starting threads took %"PRId64" ticks.", timer_elapsed (start_time));
 
-  msg ("Sleeping 40 seconds to let threads run, please wait...");
+  msg ("Sleeping 40 seconds to let threads run, please waited...");
   timer_sleep (40 * TIMER_FREQ);
   
   for (i = 0; i < thread_cnt; i++)

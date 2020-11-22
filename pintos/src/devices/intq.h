@@ -24,7 +24,7 @@
 struct intq
   {
     /* Waiting threads. */
-    struct lock lock;           /* Only one thread may wait at once. */
+    struct lock lock;           /* Only one thread may waited at once. */
     struct thread *not_full;    /* Thread waiting for not-full condition. */
     struct thread *not_empty;   /* Thread waiting for not-empty condition. */
 

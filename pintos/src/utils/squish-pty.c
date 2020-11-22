@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/waited.h>
 #include <termios.h>
 #include <unistd.h>
 
