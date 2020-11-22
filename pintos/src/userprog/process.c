@@ -543,9 +543,9 @@ setup_stack(void **esp, char *file_name)
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
-    {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success){//如果成功，设置栈帧
+  {
+    success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+    if (success){//如果成功，设置栈帧
       /**
        * Address	Name	Data	Type
        * 0xbffffffc	argv[3][...]	bar\0	char[4]
@@ -602,12 +602,14 @@ setup_stack(void **esp, char *file_name)
       }
       *(int *)newesp = zero;       //哨兵
       newesp += 4;                 
-      *newesp = (uint8_t)zero;     //word-align入栈
-      }
-      else{
-        palloc_free_page (kpage);
-      }
+      uint8_t zero_8 = (uint8_t) 0;
+      *newesp = zero_8;     //word-align入栈
     }
+    else{
+      palloc_free_page (kpage);
+    }
+  }
+  palloc_free_page(fn_copy);
   return success;
 }
 
