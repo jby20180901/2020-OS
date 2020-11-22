@@ -4,7 +4,6 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-#include "synch.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -24,7 +23,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. 最低优先级0*/
 #define PRI_DEFAULT 31                  /* Default priority. 默认优先级31*/
 #define PRI_MAX 63                      /* Highest priority. 最高优先级63*/
-#define USERPROG 1
+
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -97,32 +96,6 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    char *process_stack;                /* 用户栈 */
-    int ret;                   /* 返回值 */
-    int wait_for; //正在等待的子进程
-    struct semaphore child_sema; //等待子进程的信号量
-
-    struct thread* father_process;//父进程
-    struct list_elem child_of;//用来放在父进程的子进程列表中
-
-    struct list list_opened_file;
-    int max_fd;
-
-    bool waited;//这个进程是否已经被别人给wait了
-    struct file *fdtable[64];           /* 已打开的文件列表 */
-    int nextfd;                         /* 下一个文件指针 */
-    struct list childrenlist;           /* 子进程列表 */
-    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
-    struct semaphore loadsem;           /*  */
-    struct semaphore loadsuccesssem;    /*  */
-    struct semaphore waitsem;           /*  */
-    struct semaphore diesem;            /*  */
-    struct semaphore exitsem;           /*  */
-    struct semaphore filesem;           /*  */
-    struct semaphore jinsem;            /*  */
-    bool loadsuccess;                   /* 是否load成功 */
-    struct file *file;                  /* 当前打开的文件 */
-    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */
