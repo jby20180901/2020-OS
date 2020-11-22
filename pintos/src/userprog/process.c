@@ -65,7 +65,7 @@ process_execute (const char *file_name) //父进程创建子进程
   if (!success)                      //如果子进程没加载成功
   {
     //For exec-missing case
-    sema_down(&child->recycleSem); //当前进程阻塞在子进程退出信号量，等待子进程退出
+    sema_down(&child->recycleSem); //当前进程阻塞在子进程退出信号量，等待子进程退出，并回收子进程
     return -1;                  //返回-1
   }
   if (tid == TID_ERROR)
@@ -90,7 +90,7 @@ start_process (void *file_name_)//开始进程
   success = load (file_name, &if_.eip, &if_.esp);
   thread_current()->loadsuccess = success;      //当前进程的加载状态success
   sema_up(&thread_current()->startLoadSem);          //作为子进程，我已经加载成功了，释放等待我加载的父进程
-  sema_down(&thread_current()->returnLoadSem); //当前进程阻塞在loadsuccesssem上，等待父进程确认自己的加载状态
+  sema_down(&thread_current()->returnLoadSem);       //当前进程阻塞在returnLoadSem上，等待父进程确认自己的加载状态
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
@@ -177,7 +177,7 @@ process_exit (void)//进程销毁，回收资源
     sema_up(&cur->waitsem);        //当前进程的等待信号释放
     sema_down(&cur->dieSem);       //当前进程阻塞死亡序列，等待它的父进程来回收它
     list_remove(&cur->child_elem); //把当前进程从父进程的子进程列表中移除
-    sema_up(&cur->inforDeathSem);         //释放等待自己操作的父进程
+    sema_up(&cur->inforDeathSem);         //释放等待自己操作的父进程，通知父进程，自己死掉了
   }
   else //是main函数
   {
