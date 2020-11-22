@@ -36,10 +36,12 @@ process_execute (const char *file_name)
   fn_copy = palloc_get_page (0);
   if (fn_copy == NULL)
     return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE);
+  char *real_name, *save_pointer = NULL;
+  strlcpy(fn_copy, file_name, PGSIZE);
+  real_name = strtok_r(file_name, " ", &save_pointer);
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (real_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy); 
   return tid;
@@ -59,13 +61,57 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
+  char *real_name, *save_pointer = NULL;
+  char *token; // the arguments we are analyzing
+  //printf("full name:%s\n",file_name);
+  token = strtok_r(file_name, " ", &save_pointer);
   success = load (file_name, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
-  palloc_free_page (file_name);
   if (!success) 
     thread_exit ();
+  /* after the esp was sat, we should now set up the arguments*/
+  char *argv[256];     // the pointer to the content of the arguments
+  int argc = 0;        // the number of arguments
+  char *cur = if_.esp; // the current pointer
 
+  /*copy all the content of arguments onto the heap*/
+  for (; token != NULL; token = strtok_r(NULL, " ", &save_pointer))
+  {
+    //printf("arg:%s\n", token);
+    cur -= (strlen(token) + 2);
+    strlcpy(cur, token, strlen(token) + 2);
+    argv[argc++] = cur;
+  }
+  /*data alignment*/
+  while (((int)(cur)) % 4 != 0)
+  {
+    cur--;
+  }
+  int *arg_entry = cur;
+  int i = argc - 1;
+  /*push NULL onto the stack*/
+  arg_entry--;
+  (*arg_entry) = 0;
+  /*put the argv[i] onto the stack*/
+  while (i >= 0)
+  {
+    arg_entry--;
+    (*arg_entry) = argv[i];
+    i--;
+  }
+  /*把char** argv放好*/
+  arg_entry--;
+  (*arg_entry) = (arg_entry + 1);
+  /*把agrc放好*/
+  arg_entry--;
+  *arg_entry = argc;
+  //printf("argc:%d\n", *arg_entry);
+  /*return address*/
+  arg_entry--;
+  *arg_entry = 0;
+  if_.esp = arg_entry;
+  palloc_free_page(file_name);
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -88,7 +134,20 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  return -1;
+  struct thread *child = get_thread_by_tid(child_tid);
+  while(true){
+    if (child == NULL || child->father_process != thread_current() || child->waited)
+    { //不存在这个进程,或者这个进程已经被杀死了,再或者这个进程压根就不是子进程
+      return -1;
+    }
+    else
+    {
+      child->waited = true;
+      thread_current()->wait_for = child;
+      sema_down(&child->child_sema);
+      return child->ret;
+    }
+  }
 }
 
 /* Free the current process's resources. */
@@ -97,7 +156,6 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
