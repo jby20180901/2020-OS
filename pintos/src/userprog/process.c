@@ -60,13 +60,13 @@ tid_t process_execute(const char *file_name)//父进程创建子进程
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create(token, PRI_DEFAULT, start_process, fn_copy);//生成子进程
   struct thread *child = find_child(tid);//找到这个子进程
-  sema_down(&child->loadsem);//等待子进程加载完毕
+  sema_down(&child->startLoadSem);//等待子进程加载完毕
   bool child_load_success = child->loadsuccess;//此时子进程加载完毕
-  sema_up(&child->loadsuccesssem);//把子进程从子进程加载成功信号量释放出来
+  sema_up(&child->returnLoadSem);//把子进程从子进程加载成功信号量释放出来
   if (!child_load_success)//如果子进程没加载成功
   {
     //For exec-missing case
-    sema_down(&child->exitsem);//当前进程阻塞在子进程退出信号量，等待子进程退出
+    sema_down(&child->recycleSem);//当前进程阻塞在子进程退出信号量，等待子进程退出
     return -1;//返回-1
   }
   // printf("WWW %d \n",filenum);
@@ -92,8 +92,8 @@ start_process(void *f_name)//进程开始运行
   success = load(file_name, &if_.eip, &if_.esp);
 
   thread_current()->loadsuccess = success;//当前进程的加载状态success
-  sema_up(&thread_current()->loadsem);//作为子进程，我已经加载成功了，释放等待我加载的父进程
-  sema_down(&thread_current()->loadsuccesssem);//当前进程阻塞在loadsuccesssem上，等待父进程确认自己的加载状态
+  sema_up(&thread_current()->startLoadSem);//作为子进程，我已经加载成功了，释放等待我加载的父进程
+  sema_down(&thread_current()->returnLoadSem);//当前进程阻塞在loadsuccesssem上，等待父进程确认自己的加载状态
 
   // palloc_free_page (file_name);
   palloc_free_page(f_name);//清空页
@@ -110,7 +110,7 @@ start_process(void *f_name)//进程开始运行
 	   we just point the stack pointer (%esp) to our stack frame
 	   and jump to it. */
 
-  thread_current()->nextfd = 2;
+  thread_current()->nextfd = 2;//？？？
 
   asm volatile("movl %0, %%esp; jmp intr_exit"
                :
@@ -155,8 +155,8 @@ int process_wait(tid_t child_tid)//父进程等待子进程
     file_allow_write(child->file);//允许写子进程当前操作的文件
     lock_release(&handlesem);//释放读写锁
   }
-  sema_up(&child->diesem);//把子进程从死亡信号量上释放，继续它的回收操作
-  sema_down(&child->jinsem);//阻塞在子进程的jinsem上，等待子进程将自身从父进程列表中删除
+  sema_up(&child->dieSem);//把子进程从死亡信号量上释放，继续它的回收操作
+  sema_down(&child->inforDeathSem);//阻塞在子进程的jinsem上，等待子进程将自身从父进程列表中删除
 
   child->wait = false;//子进程等待撞态变为false
   barrier();
@@ -184,7 +184,7 @@ void process_exit(void)//进程销毁，回收资源
     curr->pagedir = NULL;//当前页表置为空
     pagedir_activate(NULL);//活跃页表置为空
     pagedir_destroy(pd);//销毁页表
-    sema_up(&curr->exitsem);//等待当前进程退出的进程释放
+    sema_up(&curr->recycleSem);//等待当前进程退出的进程释放
   }
 
   if (strcmp(curr->name, "main") != 0)//不是main函数
@@ -192,9 +192,9 @@ void process_exit(void)//进程销毁，回收资源
     printf("%s: exit(%d)\n", curr->name, curr->ret);//输出退出状态
 
     sema_up(&curr->waitsem);//当前进程的等待信号释放
-    sema_down(&curr->diesem);//当前进程阻塞死亡序列，等待它的父进程来回收它
+    sema_down(&curr->dieSem);//当前进程阻塞死亡序列，等待它的父进程来回收它
     list_remove(&curr->child_elem);//把当前进程从父进程的子进程列表中移除
-    sema_up(&curr->jinsem);//释放等待自己操作的父进程
+    sema_up(&curr->inforDeathSem);//释放等待自己操作的父进程
 
     // if(!list_empty(&curr->exitsem.waiters))
   }
