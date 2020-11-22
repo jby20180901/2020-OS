@@ -36,7 +36,7 @@
    nonnegative integer along with two atomic operators for
    manipulating it:
 
-   - down or "P": waited for the value to become positive, then
+   - down or "P": wait for the value to become positive, then
      decrement it.
 
    - up or "V": increment the value (and wake up one waiting
@@ -272,7 +272,7 @@ cond_init (struct condition *cond)
    The monitor implemented by this function is "Mesa" style, not
    "Hoare" style, that is, sending and receiving a signal are not
    an atomic operation.  Thus, typically the caller must recheck
-   the condition after the waited completes and, if necessary, waited
+   the condition after the wait completes and, if necessary, wait
    again.
 
    A given condition variable is associated with only a single
@@ -302,7 +302,7 @@ cond_wait (struct condition *cond, struct lock *lock)
 }
 
 /* If any threads are waiting on COND (protected by LOCK), then
-   this function signals one of them to wake up from its waited.
+   this function signals one of them to wake up from its wait.
    LOCK must be held before calling this function.
 
    An interrupt handler cannot acquire a lock, so it does not

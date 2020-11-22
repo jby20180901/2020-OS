@@ -31,7 +31,7 @@ struct thread *find_child(tid_t giventid)//寻找子进程
   for (e = list_begin(templist); e != list_end(templist);
        e = list_next(e))//遍历
   {
-    struct thread *t = list_entry(e, struct thread, child_of);
+    struct thread *t = list_entry(e, struct thread, child_elem);
     if (t->tid == giventid)
       return t;//返回这个子进程
   }
@@ -99,7 +99,7 @@ start_process(void *f_name)
   palloc_free_page(f_name);
   if (!success)
   {
-    thread_current()->ret = -1;//失败了，返回值为-1
+    thread_current()->returnstatus = -1;//失败了，返回值为-1
     thread_exit();
   }
 
@@ -138,17 +138,17 @@ int process_wait(tid_t child_tid)
   {
     return -1;//返回-1
   }
-  sema_down(&child->child_sema);//父进程阻塞在这个子进程的等待序列，等待子进程回收
+  sema_down(&child->waitsem);//父进程阻塞在这个子进程的等待序列，等待子进程回收
 
   // printf("child name : %s\n", child->name);
 
-  if (child->waited)//如果子进程在等
+  if (child->wait)//如果子进程在等
   {
     return -1;//返回-1
   }
-  child->waited = true;//子进程等状态置为true
+  child->wait = true;//子进程等状态置为true
 
-  int exitstatus = child->ret;//退出状态是子进程的退出状态
+  int exitstatus = child->returnstatus;//退出状态是子进程的退出状态
   if (child->file != NULL)//子进程打开文件不是空
   {
     lock_acquire(&handlesem);//获得读写锁
@@ -160,7 +160,7 @@ int process_wait(tid_t child_tid)
   sema_down(&child->jinsem);//阻塞在子进程的jinsem上
   // printf("BELOW JIN\n");
 
-  child->waited = false;//子进程等待撞他变为false
+  child->wait = false;//子进程等待撞他变为false
   barrier();
   return exitstatus;//返回子进程的退出状态
 }
@@ -201,18 +201,18 @@ void process_exit(void)
 
   if (strcmp(curr->name, "main") != 0)//不是main函数
   {
-    printf("%s: exit(%d)\n", curr->name, curr->ret);//输出退出状态
+    printf("%s: exit(%d)\n", curr->name, curr->returnstatus);//输出退出状态
 
-    sema_up(&curr->child_sema);//当前进程的等待信号释放
+    sema_up(&curr->waitsem);//当前进程的等待信号释放
     sema_down(&curr->diesem);//当前进程阻塞死亡序列
-    list_remove(&curr->child_of);//把当前进程从父进程的子进程列表中移除
+    list_remove(&curr->child_elem);//把当前进程从父进程的子进程列表中移除
     sema_up(&curr->jinsem);//jinsem释放
 
     // if(!list_empty(&curr->exitsem.waiters))
   }
   else//是main函数
   {
-    sema_up(&curr->child_sema); //当前进程的等待信号释放
+    sema_up(&curr->waitsem); //当前进程的等待信号释放
   }
 
   int j;

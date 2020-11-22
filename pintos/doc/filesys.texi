@@ -370,12 +370,12 @@ callers must ensure that only one thread can be running in the file
 system code at once.  Your submission must adopt a finer-grained
 synchronization strategy that does not require external synchronization.
 To the extent possible, operations on independent entities should be
-independent, so that they do not need to waited on each other.
+independent, so that they do not need to wait on each other.
 
 Operations on different cache blocks must be independent.  In
 particular, when I/O is required on a particular block, operations on
 other blocks that do not require I/O should proceed without having to
-waited for the I/O to complete.
+wait for the I/O to complete.
 
 Multiple processes must be able to access a single file at once.
 Multiple reads of a single file must be able to complete without
@@ -396,7 +396,7 @@ B writes.  However, A may not read data other than what B writes, e.g.@:
 if B's data is all nonzero bytes, A is not allowed to see any zeros.
 
 Operations on different directories should take place concurrently.
-Operations on the same directory may waited for one another.
+Operations on the same directory may wait for one another.
 
 Keep in mind that only data shared by multiple threads needs to be
 synchronized.  In the base file system, @struct{file} and @struct{dir}

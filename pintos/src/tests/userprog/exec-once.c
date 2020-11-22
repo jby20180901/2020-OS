@@ -7,5 +7,5 @@
 void
 test_main (void) 
 {
-  waited (exec ("child-simple"));
+  wait (exec ("child-simple"));
 }

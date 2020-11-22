@@ -50,7 +50,7 @@ syscall_handler(struct intr_frame *f)
 {
   if ((f->esp > PHYS_BASE) || (get_user((uint8_t *)f->esp) == -1))//不是用户空间
   {
-    thread_current()->ret = -1;//当前进程返回值为-1
+    thread_current()->returnstatus = -1;//当前进程返回值为-1
     thread_exit();//进程结束
   }
   uint32_t num = *(uint32_t *)f->esp;//系统调用号
@@ -67,9 +67,9 @@ syscall_handler(struct intr_frame *f)
     char *tempesp = (char *)f->esp;//新栈指针
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp < PHYS_BASE)//如果此时栈指针还处于用户空间
-      thread_current()->ret = get_user((uint8_t *)tempesp);//从栈帧处取出返回值
+      thread_current()->returnstatus = get_user((uint8_t *)tempesp);//从栈帧处取出返回值
     else
-      thread_current()->ret = -1;//否则，返回值为-1
+      thread_current()->returnstatus = -1;//否则，返回值为-1
     thread_exit();//进程结束
     break;
   }
@@ -79,12 +79,12 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp > PHYS_BASE)//如果此时栈指针不在用户栈中
     {
-      thread_current()->ret = -1;//返回值-1
+      thread_current()->returnstatus = -1;//返回值-1
       thread_exit();//进程退出
     }
     if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     char *cmd_line;//命令行
@@ -116,16 +116,16 @@ syscall_handler(struct intr_frame *f)
 
    If pid is still alive, waits until it terminates. Then, returns the status
    that pid passed to exit. If pid did not call exit(), but was terminated by the
-   kernel (e.g. killed due to an exception), waited(pid) must return -1. It is perfectly legal for a parent process to waited for child processes that have already terminated by the time the parent calls waited, but the kernel must still allow the parent to retrieve its child's exit status, or learn that the child was terminated by the kernel.
+   kernel (e.g. killed due to an exception), wait(pid) must return -1. It is perfectly legal for a parent process to wait for child processes that have already terminated by the time the parent calls wait, but the kernel must still allow the parent to retrieve its child's exit status, or learn that the child was terminated by the kernel.
 
-   waited must fail and return -1 immediately if any of the following conditions is true:
+   wait must fail and return -1 immediately if any of the following conditions is true:
 
    pid does not refer to a direct child of the calling process. pid is a direct child of the calling process if and only if the calling process received pid as a return value from a successful call to exec.
-   Note that children are not inherited: if A spawns child B and B spawns child process C, then A cannot waited for C, even if B is dead. A call to waited(C) by process A must fail. Similarly, orphaned processes are not assigned to a new parent if their parent process exits before they do.
-   The process that calls waited has already called waited on pid. That is, a process may waited for any given child at most once.
-   Processes may spawn any number of children, waited for them in any order, and may even exit without having waited for some or all of their children. Your design should consider all the ways in which waits can occur. All of a process's resources, including its struct thread, must be freed whether its parent ever waits for it or not, and regardless of whether the child exits before or after its parent.
+   Note that children are not inherited: if A spawns child B and B spawns child process C, then A cannot wait for C, even if B is dead. A call to wait(C) by process A must fail. Similarly, orphaned processes are not assigned to a new parent if their parent process exits before they do.
+   The process that calls wait has already called wait on pid. That is, a process may wait for any given child at most once.
+   Processes may spawn any number of children, wait for them in any order, and may even exit without having waited for some or all of their children. Your design should consider all the ways in which waits can occur. All of a process's resources, including its struct thread, must be freed whether its parent ever waits for it or not, and regardless of whether the child exits before or after its parent.
 
-   You must ensure that Pintos does not terminate until the initial process exits. The supplied Pintos code tries to do this by calling process_wait()(in userprog/process.c) from main() (in threads/init.c). We suggest that you implement process_wait() according to the comment at the top of the function and then implement the waited system call in terms of process_wait().
+   You must ensure that Pintos does not terminate until the initial process exits. The supplied Pintos code tries to do this by calling process_wait()(in userprog/process.c) from main() (in threads/init.c). We suggest that you implement process_wait() according to the comment at the top of the function and then implement the wait system call in terms of process_wait().
 
    Implementing this system call requires considerably more work than any of the rest.*/
 
@@ -146,19 +146,19 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;//新栈指针上移4位
     if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
 
     if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1))//同上
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     bool answer = false;//返回值默认false
     if (*tempesp == '\0')//如果栈指针指向空字符串
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     else
@@ -218,14 +218,14 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if (*(uint32_t *)tempesp > PHYS_BASE)
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
       f->eax = -1;
     }
 
     if ((get_user(*(uint8_t **)tempesp) == -1) || (*tempesp == NULL))
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
       f->eax = -1;
     }
@@ -308,18 +308,18 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if ((fd < 0) || (fd > 64))//文件号不合法
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     if (*(uint32_t *)tempesp > PHYS_BASE)//非用户空间
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
 
     if ((get_user(*(uint8_t **)tempesp) == -1) || (tempesp == NULL))//同上
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     char *buffer;
@@ -377,7 +377,7 @@ syscall_handler(struct intr_frame *f)
     tempesp += 4;
     if (*(uint32_t *)tempesp > PHYS_BASE)
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
 
@@ -400,22 +400,22 @@ syscall_handler(struct intr_frame *f)
     {
       if (fd <= 0)
       {
-        thread_current()->ret = -1;
+        thread_current()->returnstatus = -1;
         thread_exit();
       }
       else if (fd > sizeof(thread_current()->fdtable) / sizeof(struct file *))
       {
-        thread_current()->ret = -1;
+        thread_current()->returnstatus = -1;
         thread_exit();
       }
       else if (thread_current()->fdtable[fd] == NULL)
       {
-        thread_current()->ret = -1;
+        thread_current()->returnstatus = -1;
         thread_exit();
       }
       else if ((get_user((uint8_t *)buffer) == -1) || (buffer == NULL))
       {
-        thread_current()->ret = -1;
+        thread_current()->returnstatus = -1;
         thread_exit();
       }
 
@@ -474,7 +474,7 @@ syscall_handler(struct intr_frame *f)
     int fd = *(int *)tempesp;
     if ((fd < 0) || (fd > 64))
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
 
@@ -489,7 +489,7 @@ syscall_handler(struct intr_frame *f)
     }
     else
     {
-      thread_current()->ret = -1;
+      thread_current()->returnstatus = -1;
       thread_exit();
     }
     barrier();

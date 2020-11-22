@@ -24,9 +24,9 @@ main (int argc UNUSED, char *argv[])
       snprintf (child_cmd, sizeof child_cmd, "multi-recurse %d", n - 1);
       CHECK ((child_pid = exec (child_cmd)) != -1, "exec(\"%s\")", child_cmd);
 
-      code = waited (child_pid);
+      code = wait (child_pid);
       if (code != n - 1)
-        fail ("waited(exec(\"%s\")) returned %d", child_cmd, code);
+        fail ("wait(exec(\"%s\")) returned %d", child_cmd, code);
     }
   
   msg ("end %d", n);

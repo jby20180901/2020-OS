@@ -7,5 +7,5 @@
 void
 test_main (void) 
 {
-  waited ((pid_t) 0x0c020301);
+  wait ((pid_t) 0x0c020301);
 }

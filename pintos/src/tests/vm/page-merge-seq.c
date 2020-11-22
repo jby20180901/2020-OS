@@ -57,7 +57,7 @@ sort_chunks (void)
       /* Sort with subprocess. */
       CHECK ((child = exec ("child-sort buffer")) != -1,
              "exec \"child-sort buffer\"");
-      CHECK (waited (child) == 123, "waited for child-sort");
+      CHECK (wait (child) == 123, "wait for child-sort");
 
       /* Read chunk back from file. */
       CHECK ((handle = open ("buffer")) > 1, "open \"buffer\"");

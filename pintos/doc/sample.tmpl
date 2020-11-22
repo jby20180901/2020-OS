@@ -64,7 +64,7 @@ releases its ready_to_die latch, allowing the parent to continue.
 ---- SYNCHRONIZATION ----
 
 >> Consider parent thread P with child thread C.  How do you ensure
->> proper synchronization and avoid race conditions when P calls waited(C)
+>> proper synchronization and avoid race conditions when P calls wait(C)
 >> before C exits?  After C exits?  How do you ensure that all resources
 >> are freed in each case?  How about when P terminates without waiting,
 >> before C exits?  After C exits?  Are there any special cases?
@@ -72,7 +72,7 @@ releases its ready_to_die latch, allowing the parent to continue.
 C waits in thread_exit() for P to die before it finishes its own
 exit, using the can_die semaphore "down"ed by C and "up"ed by P as
 it exits.  Regardless of whether whether C has terminated, there
-is no race on waited(C), because C waits for P's permission before
+is no race on wait(C), because C waits for P's permission before
 it frees itself.
 
 Regardless of whether P waits for C, P still "up"s C's can_die
@@ -80,7 +80,7 @@ semaphore when P dies, so C will always be freed.  (However,
 freeing C's resources is delayed until P's death.)
 
 The initial thread is a special case because it has no parent to
-waited for it or to "up" its can_die semaphore.  Therefore, its
+wait for it or to "up" its can_die semaphore.  Therefore, its
 can_die semaphore is initialized to 1.
 
 ---- RATIONALE ----

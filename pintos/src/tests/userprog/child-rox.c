@@ -44,7 +44,7 @@ main (int argc UNUSED, char *argv[])
       snprintf (cmd, sizeof cmd, "child-rox %d", atoi (argv[1]) - 1);
       CHECK ((child = exec (cmd)) != -1, "exec \"%s\"", cmd);
       quiet = true;
-      CHECK (waited (child) == 12, "waited for \"child-rox\"");
+      CHECK (wait (child) == 12, "wait for \"child-rox\"");
       quiet = false;
     }
 

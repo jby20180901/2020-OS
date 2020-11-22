@@ -68,7 +68,7 @@ run next.  (If no thread is ready to run
 at any given time, then the special ``idle'' thread, implemented in
 @func{idle}, runs.)
 Synchronization primitives can force context switches when one
-thread needs to waited for another thread to do something.
+thread needs to wait for another thread to do something.
 
 The mechanics of a context switch are
 in @file{threads/switch.S}, which is 80@var{x}86
@@ -493,7 +493,7 @@ values.
 
 One issue with priority scheduling is ``priority inversion''.  Consider
 high, medium, and low priority threads @var{H}, @var{M}, and @var{L},
-respectively.  If @var{H} needs to waited for @var{L} (for instance, for a
+respectively.  If @var{H} needs to wait for @var{L} (for instance, for a
 lock held by @var{L}), and @var{M} is on the ready list, then @var{H}
 will never get the CPU because the low priority thread will not get any
 CPU time.  A partial fix for this problem is for @var{H} to ``donate''
@@ -712,7 +712,7 @@ return from @func{schedule}.
 instruction.
 
 @item
-@func{waited} in @file{devices/intq.c}, whose callers are responsible for
+@func{wait} in @file{devices/intq.c}, whose callers are responsible for
 re-enabling interrupts.
 @end itemize
 @end itemize
@@ -797,7 +797,7 @@ checked by the @code{priority-donate-sema} test.
 
 Yes.  If a thread added to the ready list has higher priority than the
 running thread, the correct behavior is to immediately yield the
-processor.  It is not acceptable to waited for the next timer interrupt.
+processor.  It is not acceptable to wait for the next timer interrupt.
 The highest priority thread should run as soon as it is runnable,
 preempting whatever thread is currently running.
 

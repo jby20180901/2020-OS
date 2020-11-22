@@ -82,7 +82,7 @@ exec (const char *file)
 }
 
 int
-waited (pid_t pid)
+wait (pid_t pid)
 {
   return syscall1 (SYS_WAIT, pid);
 }

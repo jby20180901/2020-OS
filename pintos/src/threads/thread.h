@@ -77,10 +77,10 @@ typedef int tid_t;
    value, triggering the assertion. */
 /* The `elem' member has a dual purpose.  It can be an element in
    the run queue (thread.c), or it can be an element in a
-   semaphore waited list (synch.c).  It can be used these two ways
+   semaphore wait list (synch.c).  It can be used these two ways
    only because they are mutually exclusive: only a thread in the
    ready state is on the run queue, whereas only a thread in the
-   blocked state is on a semaphore waited list. */
+   blocked state is on a semaphore wait list. */
 struct thread
   {
     /* Owned by thread.c. */
@@ -98,22 +98,21 @@ struct thread
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
     char *process_stack;                /* 用户栈 */
-    int ret;                   /* 返回值 */
+    int returnstatus;                   /* 返回值 */
     struct file *fdtable[64];           /* 已打开的文件列表 */
     int nextfd;                         /* 下一个文件指针 */
     struct list childrenlist;           /* 子进程列表 */
-    struct list_elem child_of;        /* 作为一个子进程，存在父进程的elem */
+    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
     struct semaphore loadsem;           /*  */
     struct semaphore loadsuccesssem;    /*  */
-    struct semaphore child_sema;           /* 等待子进程的信号量 */
+    struct semaphore waitsem;           /*  */
     struct semaphore diesem;            /*  */
     struct semaphore exitsem;           /*  */
     struct semaphore filesem;           /*  */
     struct semaphore jinsem;            /*  */
     bool loadsuccess;                   /* 是否load成功 */
     struct file *file;                  /* 当前打开的文件 */
-    struct thread *father_process;      //父进程
-    bool waited;                          /* 是否在等待子进程 */
+    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */

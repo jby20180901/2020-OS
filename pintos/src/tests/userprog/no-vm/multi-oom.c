@@ -134,7 +134,7 @@ main (int argc, char *argv[])
           child_pid = spawn_child (n + 1, CRASH);
           if (child_pid != -1)
             {
-              if (waited (child_pid) != -1)
+              if (wait (child_pid) != -1)
                 fail ("crashed child should return -1.");
             }
           /* If spawning this child failed, so should
@@ -148,10 +148,10 @@ main (int argc, char *argv[])
       if (child_pid == -1)
         return n;
 
-      /* Else waited for child to report how deeply it was able to recurse. */
-      int reached_depth = waited (child_pid);
+      /* Else wait for child to report how deeply it was able to recurse. */
+      int reached_depth = wait (child_pid);
       if (reached_depth == -1)
-        fail ("waited returned -1.");
+        fail ("wait returned -1.");
 
       /* Record the depth reached during the first run; on subsequent
          runs, fail if those runs do not match the depth achieved on the

@@ -154,7 +154,7 @@ page_fault (struct intr_frame *f)
     f->eax =0xffffffff;
     return;
   }
-  thread_current()->ret=-1;
+  thread_current()->returnstatus=-1;
   thread_exit();
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to

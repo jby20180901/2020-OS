@@ -34,7 +34,7 @@ main (void)
         {
           pid_t pid = exec (command);
           if (pid != PID_ERROR)
-            printf ("\"%s\": exit code %d\n", command, waited (pid));
+            printf ("\"%s\": exit code %d\n", command, wait (pid));
           else
             printf ("exec failed\n");
         }
