@@ -163,7 +163,6 @@ void SysHalt(struct intr_frame *f)
 void SysExit(struct intr_frame *f)
 {
   int ret_value = getArguments(f, 1);
-  printf("%s: exit(%d)\n", thread_current()->name, ret_value);
   //struct thread *cur = thread_current();
   //cur->ret = ret_value;
   thread_current()->ret = ret_value;

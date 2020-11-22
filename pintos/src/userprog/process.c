@@ -535,17 +535,19 @@ setup_stack(void **esp, char *file_name)
   bool success = false;
   char *fn_copy;
 
-  /* 拷贝文件内容 */
+  /* Make a copy of FILE_NAME.
+	   Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page(0);
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy(fn_copy, file_name, PGSIZE);
 
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  if (kpage != NULL) 
+  kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+  if (kpage != NULL)
   {
-    success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-    if (success){//如果成功，设置栈帧
+    success = install_page(((uint8_t *)PHYS_BASE) - PGSIZE, kpage, true);
+    if (success)
+    {
       /**
        * Address	Name	Data	Type
        * 0xbffffffc	argv[3][...]	bar\0	char[4]
@@ -563,53 +565,54 @@ setup_stack(void **esp, char *file_name)
        * 0xbfffffcc	return address	0	void (*) ()
        * 
        */
-      *esp = PHYS_BASE;                            //esp指向物理基地址
-      uint8_t *newesp = (uint8_t *)*esp;           //一个新的用于操作的esp指针
-      char *token1, *token2, *save_ptr1, *save_ptr2; //两次划分文件
-      int argc = 0;                                  //参数个数0，参数表长度1
-      int arglength = 1;                                 //参数总长度1，多出一位，避免出现异常的覆盖
-      int zero = 0;                              //规定的置0位
-      //遍历参数表,先确定整个栈的长度
-      for (token1 = strtok_r(file_name, " ", &save_ptr1); token1 != NULL; token1 = strtok_r(NULL, " ", &save_ptr1))
+      *esp = PHYS_BASE;//esp指向物理基地址
+      uint8_t *newesp = (uint8_t *)*esp;//newesp = esp
+      char *token1, *token2, *save_ptr1, *save_ptr2;//划分文件
+      int argc = 0, arglength = 1;//参数个数0，参数表长度1
+      int zero = 0;//规定的置0位
+      for (token1 = strtok_r(file_name, " ", &save_ptr1); token1 != NULL;
+           token1 = strtok_r(NULL, " ", &save_ptr1))//遍历参数表
       {
-        argc++;                                //参数++
-        arglength += (int)(strlen(token1)) + 1; //所有参数所占字节长度增加
+        argc++;//参数++
+        arglength += (int)(strlen(token1)) + 1;//参数表字节长度++
       }
-      newesp -= arglength;                       //newesp移动到要放入真实参数的地方
-      newesp -= (argc + 1) * 4;                  //(参数总数+参数表头地址)*4字节
-      newesp -= 12;                              //向下移动3字节，安全保障
-      *esp -= (arglength + 12 + (argc + 1) * 4); //真正的esp向下移动
+      newesp -= arglength;//newesp移动到要放入真实参数的地方
+      newesp -= (argc + 1) * 4;//(参数总数+参数表头地址)*4字节
+      newesp -= 12;//向下移动3字节，安全保障
+      *esp -= (arglength + 12 + (argc + 1) * 4);//真正的esp向下移动
 
-      thread_current()->process_stack = (char *)*esp; //用户栈空间指向esp
+      thread_current()->process_stack = (char *)*esp;//用户栈空间指向esp
 
       *(int *)newesp = zero;
-      zero += 4; //返回值，此时是0，入栈
+      newesp += 4;//返回值，此时是0，入栈
       *(int *)newesp = argc;
-      newesp += 4; //参数个数入栈
+      newesp += 4;//参数个数入栈
       *(uint32_t *)newesp = (uint32_t)(newesp + 4);
-      newesp += 4;                                                     //参数表头地址入栈
-      int temp = 4 * (argc + 1) + 1;                                   //整个参数表+尾部\0和缓冲0
-      //重新遍历参数表,填充参数表
-      for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL; token2 = strtok_r(NULL, " ", &save_ptr2))
-      {                                                                
-        *(uint32_t *)newesp = (uint32_t)(newesp + temp);               //保存参数对应真实的地址
-        newesp += temp;                                                //栈指针上去
-        strlcpy((char *)newesp, token2, (size_t)(strlen(token2) + 1)); //将token复制到esp保存的地址指向的区域
-        newesp -= temp;                                                //栈指针回来
-        newesp += 4;                                                   //栈指针+4
-        temp -= 4;                                                     //需要上去的地址数-4
-        temp += strlen(token2) + 1;                                    //需要上去的地址数 加上刚刚的token长度
+      newesp += 4;//参数表头地址入栈
+      int temp = 4 * (argc + 1) + 1;//整个参数表+尾部\0和缓冲0
+      for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL;
+           token2 = strtok_r(NULL, " ", &save_ptr2))
+      {//重新遍历参数表
+        *(uint32_t *)newesp = (uint32_t)(newesp + temp);//保存参数对应真实的地址
+        newesp += temp;//栈指针上去
+        strlcpy((char *)newesp, token2, (size_t)(strlen(token2) + 1));//将token复制到esp保存的地址指向的区域
+        newesp -= temp;//栈指针回来
+        newesp += 4;//栈指针+4
+        temp -= 4;//需要上去的地址数-4
+        temp += strlen(token2) + 1;//需要上去的地址数 加上刚刚的token长度
       }
-      *(int *)newesp = zero;       //哨兵
-      newesp += 4;                 
-      uint8_t zero_8 = (uint8_t) 0;
-      *newesp = zero_8;     //word-align入栈
+      *(int *)newesp = zero;//哨兵
+      newesp += 4;
+      *newesp = (uint8_t)zero;//word-align入栈
+      // hex_dump (*esp, *esp, (size_t)(arglength+12+(argc+1)*4),true);
     }
-    else{
-      palloc_free_page (kpage);
+    else
+    {
+      palloc_free_page(kpage);
     }
   }
   palloc_free_page(fn_copy);
+
   return success;
 }
 
