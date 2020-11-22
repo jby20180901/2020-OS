@@ -475,13 +475,12 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
 #ifdef USERPROG
   list_init(&t->childrenlist);
-  sema_init(&t->diesem, 0);
-  sema_init(&t->loadsem, 0);
-  sema_init(&t->loadsuccesssem, 0);
+  sema_init(&t->dieSem, 0);
+  sema_init(&t->startLoadSem, 0);
+  sema_init(&t->returnLoadSem, 0);
   sema_init(&t->waitsem, 0);
-  sema_init(&t->exitsem, 0);
-  sema_init(&t->filesem, 1);
-  sema_init(&t->jinsem, 0);
+  sema_init(&t->recycleSem, 0);
+  sema_init(&t->inforDeathSem, 0);
   t->loadsuccess = true;
 #endif
   old_level = intr_disable ();

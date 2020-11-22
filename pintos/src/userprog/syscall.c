@@ -43,9 +43,12 @@ put_user(uint8_t *udst, uint8_t byte)
   return error_code != -1;
 }
 
+struct lock handlesem;
+int filenum = 0;
+
 handler handlers[NumberCall];
 /*获得系统调用的编号*/
-int getSyscallNumber(struct intr_frame *f);
+uint32_t getSyscallNumber(struct intr_frame *f);
 /*获得pos处的系统调用参数*/
 void *getArguments(struct intr_frame *f, int pos);
 /*判断一个地址有没有问题*/
@@ -70,6 +73,27 @@ void SysOpen(struct intr_frame *f);
 
 /*用来应对close系统调用*/
 void SysClose(struct intr_frame *f);
+
+/* 用来应对exec系统调用 */
+void SysExec(struct intr_frame *);
+
+/* 用来应对Wait系统调用 */
+void SysWait(struct intr_frame *);
+
+/* 用来应对Remove系统调用*/
+void SysRemove(struct intr_frame *);
+
+/*用来应对filesize系统调用*/
+void SysFileSize(struct intr_frame *f);
+
+/*用来应对read系统调用*/
+void SysRead(struct intr_frame *f);
+
+/*用来应对seek系统调用*/
+void SysSeek(struct intr_frame *f);
+
+/*用来应对tell系统调用*/
+void SysTell(struct intr_frame *f);
 
 void syscall_init(void)
 {
@@ -512,7 +536,6 @@ void SysTell(struct intr_frame *f){
 /*从一个进程中退出*/
 void exit(int status)
 {
-  printf("%s: exit(%d)\n", thread_current()->name, status);
   thread_current()->ret = status;
   thread_exit();
 }
