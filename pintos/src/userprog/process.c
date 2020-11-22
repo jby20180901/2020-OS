@@ -88,7 +88,18 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+  loop();
   return -1;
+}
+
+int loop()
+{
+  int num = 100000, answer = 3, i;
+  for (i = 0; i < num; i++)
+  {
+    answer += i;
+  }
+  return answer;
 }
 
 /* Free the current process's resources. */
