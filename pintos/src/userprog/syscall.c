@@ -6,6 +6,7 @@
 #include "lib/user/syscall.h"
 #include "threads/vaddr.h"
 #include "lib/kernel/console.h"
+#include "filesys/off_t.h"
 
 /*d Reads a byte at user virtual address UADDR.
    UADDR must be below PHYS_BASE.
