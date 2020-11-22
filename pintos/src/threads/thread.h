@@ -4,6 +4,8 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "synch.h"
+#define USERPROG 1
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -96,6 +98,21 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    char *process_stack;                /* 用户栈 */
+    int ret;                            /* 返回值 */
+    struct file *fdtable[64];           /* 已打开的文件列表 */
+    int nextfd;                         /* 下一个文件指针 */
+    struct list childrenlist;           /* 子进程列表 */
+    struct list_elem child_elem;        /* 作为一个子进程，存在父进程的elem */
+    struct semaphore loadsem;           /* 子进程加载信号量 */
+    struct semaphore loadsuccesssem;    /* 子进程是否加载成功 */
+    struct semaphore waitsem;           /* 父进程等待子进程的信号量 */
+    struct semaphore diesem;            /* 进程死亡信号量 */
+    struct semaphore exitsem;           /*  */
+    struct semaphore jinsem;            /*  */
+    bool loadsuccess;                   /* 是否load进程成功的标志 */
+    struct file *file;                  /* 当前打开的文件 */
+    bool wait;                          /* 是否在等待子进程 */
 #endif
 
     /* Owned by thread.c. */

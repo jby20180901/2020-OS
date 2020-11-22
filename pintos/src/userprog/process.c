@@ -21,6 +21,22 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
+struct thread *find_child(tid_t giventid)//寻找子进程
+{
+  struct list *templist = &thread_current()->childrenlist;//当前进程的子进程序列
+  if (list_empty(templist))//如果是空的
+    return NULL;//返回NULL
+  struct list_elem *e;
+  for (e = list_begin(templist); e != list_end(templist);
+       e = list_next(e))//遍历
+  {
+    struct thread *t = list_entry(e, struct thread, child_elem);
+    if (t->tid == giventid)
+      return t;//返回这个子进程
+  }
+  return NULL;
+}
+
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -427,19 +443,84 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp) 
+setup_stack(void **esp, char *file_name)
 {
   uint8_t *kpage;
   bool success = false;
+  char *fn_copy;
+
+  /* 拷贝文件内容 */
+  fn_copy = palloc_get_page(0);
+  if (fn_copy == NULL)
+    return TID_ERROR;
+  strlcpy(fn_copy, file_name, PGSIZE);
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE;
-      else
+      if (success){//如果成功，设置栈帧
+      /**
+       * Address	Name	Data	Type
+       * 0xbffffffc	argv[3][...]	bar\0	char[4]
+       * 0xbffffff8	argv[2][...]	foo\0	char[4]
+       * 0xbffffff5	argv[1][...]	-l\0	char[3]
+       * 0xbfffffed	argv[0][...]	/bin/ls\0	char[8]
+       * 0xbfffffec	word-align	0	uint8_t
+       * 0xbfffffe8	argv[4]	0	char *
+       * 0xbfffffe4	argv[3]	0xbffffffc	char *
+       * 0xbfffffe0	argv[2]	0xbffffff8	char *
+       * 0xbfffffdc	argv[1]	0xbffffff5	char *
+       * 0xbfffffd8	argv[0]	0xbfffffed	char *
+       * 0xbfffffd4	argv	0xbfffffd8	char **
+       * 0xbfffffd0	argc	4	int
+       * 0xbfffffcc	return address	0	void (*) ()
+       * 
+       */
+      *esp = PHYS_BASE;                            //esp指向物理基地址
+      uint8_t *newesp = (uint8_t *)*esp;           //一个新的用于操作的esp指针
+      char *token1, *token2, *save_ptr1, *save_ptr2; //两次划分文件
+      int argc = 0;                                  //参数个数0，参数表长度1
+      int arglength = 1;                                 //参数总长度1，多出一位，避免出现异常的覆盖
+      int zero = 0;                              //规定的置0位
+      //遍历参数表,先确定整个栈的长度
+      for (token1 = strtok_r(file_name, " ", &save_ptr1); token1 != NULL; token1 = strtok_r(NULL, " ", &save_ptr1))
+      {
+        argc++;                                //参数++
+        arglength += (int)(strlen(token1)) + 1; //所有参数所占字节长度增加
+      }
+      newesp -= arglength;                       //newesp移动到要放入真实参数的地方
+      newesp -= (argc + 1) * 4;                  //(参数总数+参数表头地址)*4字节
+      newesp -= 12;                              //向下移动3字节，安全保障
+      *(uint8_t *)esp -= (arglength + 12 + (argc + 1) * 4); //真正的esp向下移动
+
+      thread_current()->process_stack = (char *)*esp; //用户栈空间指向esp
+
+      *(int *)newesp = zero;
+      zero += 4; //返回值，此时是0，入栈
+      *(int *)newesp = argc;
+      newesp += 4; //参数个数入栈
+      *(uint32_t *)newesp = (uint32_t)(newesp + 4);
+      newesp += 4;                                                     //参数表头地址入栈
+      int temp = 4 * (argc + 1) + 1;                                   //整个参数表+尾部\0和缓冲0
+      //重新遍历参数表,填充参数表
+      for (token2 = strtok_r(fn_copy, " ", &save_ptr2); token2 != NULL; token2 = strtok_r(NULL, " ", &save_ptr2))
+      {                                                                
+        *(uint32_t *)newesp = (uint32_t)(newesp + temp);               //保存参数对应真实的地址
+        newesp += temp;                                                //栈指针上去
+        strlcpy((char *)newesp, token2, (size_t)(strlen(token2) + 1)); //将token复制到esp保存的地址指向的区域
+        newesp -= temp;                                                //栈指针回来
+        newesp += 4;                                                   //栈指针+4
+        temp -= 4;                                                     //需要上去的地址数-4
+        temp += strlen(token2) + 1;                                    //需要上去的地址数 加上刚刚的token长度
+      }
+      *(int *)newesp = zero;       //哨兵
+      newesp += 4;                 
+      *newesp = (uint8_t)zero;     //word-align入栈
+      }
+      else{
         palloc_free_page (kpage);
+      }
     }
   return success;
 }
