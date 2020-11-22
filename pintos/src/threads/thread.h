@@ -98,7 +98,7 @@ struct thread
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
     char *process_stack;                /* 用户栈 */
-    int returnstatus;                   /* 返回值 */
+    int ret;                   /* 返回值 */
     struct file *fdtable[64];           /* 已打开的文件列表 */
     int nextfd;                         /* 下一个文件指针 */
     struct list childrenlist;           /* 子进程列表 */
