@@ -175,52 +175,36 @@ void SysExit(struct intr_frame *f)
 void SysWrite(struct intr_frame *f)
 {
   int *esp = f->esp;
-  int fd = (int)getArguments(f, 1);
-  const char *buffer = (const char *)getArguments(f, 2);
+  int fd = (int)getArguments(f, 2);
+  const char *buffer = (const char *)*(esp + 6);
   unsigned size = (size_t)getArguments(f, 3);
-  //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
-  if (fd == 1)
+  //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));	  //printf("file descriptor:%d, second arguments:%x, buffer size:%d, fourth arguments:%d, fifth arguments:%d, sixth argument:%d\n", fd, buffer,size,*(esp+4), *(esp+5), *(esp+6));
+  putbuf(buffer, size);
+  if (fd == 0)
+  { //stdin
+    f->eax = 0;
+    exit(-1);
+  }
+  else if (fd == 1)
   {
-
-    while (size > 100)
-    {
-      putbuf(buffer, 100);
-      buffer += 100;
-      size -= 100;
-      barrier();
-    }
+    validateAddr(buffer);
     putbuf(buffer, size);
+    f->eax = 0;
   }
   else
   {
-    if (fd <= 0)
-    {
-      thread_current()->ret = -1;
-      thread_exit();
+    validateAddr(buffer);
+    struct list_elem *file_node = get_file_by_fd(fd);
+    if (file_node == NULL)
+    { //有问题的fd
+      exit(-1);
     }
-    else if (fd > sizeof(thread_current()->fdtable) / sizeof(struct file *))
+    else
     {
-      thread_current()->ret = -1;
-      thread_exit();
+      struct opened_file *target_file = thread_current()->fdtable[fd];
+      f->eax = file_write(target_file, buffer, size);
     }
-    else if (thread_current()->fdtable[fd] == NULL)
-    {
-      thread_current()->ret = -1;
-      thread_exit();
-    }
-    else if ((get_user((uint8_t *)buffer) == -1) || (buffer == NULL))
-    {
-      thread_current()->ret = -1;
-      thread_exit();
-    }
-
-    struct file *filetowrite = thread_current()->fdtable[fd];
-    lock_acquire(&handlesem);
-    off_t writebytes = file_write(filetowrite, (void *)buffer, (off_t)size);
-    lock_release(&handlesem);
-    f->eax = (int)writebytes;
   }
-  barrier();
 }
 
 /*创建一个新文件*/
