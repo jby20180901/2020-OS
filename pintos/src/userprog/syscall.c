@@ -194,7 +194,7 @@ void SysWrite(struct intr_frame *f)
   else
   {
     validateAddr(buffer);
-    struct list_elem *file_node = get_file_by_fd(fd);
+    struct list_elem *file_node = thread_current()->fdtable[fd]
     if (file_node == NULL)
     { //有问题的fd
       exit(-1);
