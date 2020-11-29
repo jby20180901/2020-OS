@@ -6,14 +6,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run sm-random
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 101 sectors (50 kB), Pintos scratch (22)
 filesys: using hda2
@@ -34,7 +34,7 @@ Executing 'sm-random':
 sm-random: exit(0)
 Execution of 'sm-random' complete.
 Timer: 474 ticks
-Thread: 47 idle ticks, 208 kernel ticks, 221 user ticks
+Thread: 48 idle ticks, 207 kernel ticks, 221 user ticks
 hda2 (filesys): 337 reads, 340 writes
 hda3 (scratch): 100 reads, 2 writes
 Console: 1054 characters output

@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run rox-child
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 201 sectors (100 kB), Pintos scratch (22)
 filesys: using hda2
@@ -31,13 +31,18 @@ Executing 'rox-child':
 (rox-child) read "child-rox"
 (rox-child) write "child-rox"
 (rox-child) exec "child-rox 1"
-rox-child: exit(-1)
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) try to write "child-rox": FAILED
+child-rox: exit(1)
+(rox-child) wait for child: FAILED
+rox-child: exit(1)
 Execution of 'rox-child' complete.
-Timer: 377 ticks
-Thread: 93 idle ticks, 248 kernel ticks, 39 user ticks
-hda2 (filesys): 90 reads, 409 writes
+Timer: 461 ticks
+Thread: 94 idle ticks, 285 kernel ticks, 84 user ticks
+hda2 (filesys): 131 reads, 410 writes
 hda3 (scratch): 200 reads, 2 writes
-Console: 1035 characters output
+Console: 1189 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off..

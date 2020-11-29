@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run read-bad-ptr
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 97 sectors (48 kB), Pintos scratch (22)
 filesys: using hda2
@@ -30,8 +30,8 @@ Executing 'read-bad-ptr':
 (read-bad-ptr) open "sample.txt"
 read-bad-ptr: exit(-1)
 Execution of 'read-bad-ptr' complete.
-Timer: 296 ticks
-Thread: 44 idle ticks, 224 kernel ticks, 30 user ticks
+Timer: 299 ticks
+Thread: 44 idle ticks, 228 kernel ticks, 29 user ticks
 hda2 (filesys): 94 reads, 200 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 965 characters output

@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run rox-multichild
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 201 sectors (100 kB), Pintos scratch (22)
 filesys: using hda2
@@ -31,13 +31,18 @@ Executing 'rox-multichild':
 (rox-multichild) read "child-rox"
 (rox-multichild) write "child-rox"
 (rox-multichild) exec "child-rox 5"
-rox-multichild: exit(-1)
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) try to write "child-rox": FAILED
+child-rox: exit(1)
+(rox-multichild) wait for child: FAILED
+rox-multichild: exit(1)
 Execution of 'rox-multichild' complete.
-Timer: 381 ticks
-Thread: 88 idle ticks, 254 kernel ticks, 41 user ticks
-hda2 (filesys): 90 reads, 409 writes
+Timer: 465 ticks
+Thread: 87 idle ticks, 293 kernel ticks, 87 user ticks
+hda2 (filesys): 131 reads, 410 writes
 hda3 (scratch): 200 reads, 2 writes
-Console: 1085 characters output
+Console: 1244 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off..

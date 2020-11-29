@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run syn-read
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 207 sectors (103 kB), Pintos scratch (22)
 filesys: using hda2
@@ -32,13 +32,18 @@ Executing 'syn-read':
 (syn-read) write "data"
 (syn-read) close "data"
 (syn-read) exec child 1 of 10: "child-syn-read 0"
-syn-read: exit(-1)
+(syn-read) exec child 2 of 10: "child-syn-read 1"
+(syn-read) exec child 3 of 10: "child-syn-read 2"
+(syn-read) exec child 4 of 10: "child-syn-read 3"
+load: child-syn-read: open failed
+(syn-read) exec child 4 of 10: "child-syn-read 3": FAILED
+syn-read: exit(1)
 Execution of 'syn-read' complete.
-Timer: 405 ticks
-Thread: 96 idle ticks, 253 kernel ticks, 58 user ticks
-hda2 (filesys): 110 reads, 428 writes
+Timer: 647 ticks
+Thread: 94 idle ticks, 272 kernel ticks, 283 user ticks
+hda2 (filesys): 426 reads, 428 writes
 hda3 (scratch): 206 reads, 2 writes
-Console: 1062 characters output
+Console: 1304 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
-Powering off..
+Powering off...

@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run open-boundary
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 99 sectors (49 kB), Pintos scratch (22)
 filesys: using hda2
@@ -31,8 +31,8 @@ Executing 'open-boundary':
 (open-boundary) end
 open-boundary: exit(0)
 Execution of 'open-boundary' complete.
-Timer: 308 ticks
-Thread: 46 idle ticks, 230 kernel ticks, 35 user ticks
+Timer: 311 ticks
+Thread: 45 idle ticks, 231 kernel ticks, 37 user ticks
 hda2 (filesys): 88 reads, 204 writes
 hda3 (scratch): 98 reads, 2 writes
 Console: 991 characters output

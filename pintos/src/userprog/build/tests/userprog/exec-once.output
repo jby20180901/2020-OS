@@ -7,14 +7,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run exec-once
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 185 sectors (92 kB), Pintos scratch (22)
 filesys: using hda2
@@ -27,13 +27,16 @@ Putting 'child-simple' into the file system...
 Erasing ustar archive...
 Executing 'exec-once':
 (exec-once) begin
-exec-once: exit(-1)
+(child-simple) run
+child-simple: exit(81)
+(exec-once) end
+exec-once: exit(0)
 Execution of 'exec-once' complete.
-Timer: 349 ticks
-Thread: 84 idle ticks, 247 kernel ticks, 21 user ticks
-hda2 (filesys): 90 reads, 376 writes
+Timer: 419 ticks
+Thread: 83 idle ticks, 284 kernel ticks, 55 user ticks
+hda2 (filesys): 130 reads, 376 writes
 hda3 (scratch): 184 reads, 2 writes
-Console: 918 characters output
+Console: 976 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off..

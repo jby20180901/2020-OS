@@ -210,6 +210,11 @@ thread_create (const char *name, int priority,
 
   intr_set_level (old_level);
 
+#ifdef USERPROG
+  list_push_back(&thread_current()->childrenlist, &t->child_of);
+  t->waited = false;
+#endif
+
   /* Add to run queue. */
   thread_unblock (t);
 
@@ -489,6 +494,16 @@ init_thread (struct thread *t, const char *name, int priority)
   t->waited = false;
 
   list_init(&t->list_opened_file);
+#ifdef USERPROG
+  list_init(&t->childrenlist);
+  sema_init(&t->dieSem, 0);
+  sema_init(&t->startLoadSem, 0);
+  sema_init(&t->returnLoadSem, 0);
+  // sema_init(&t->waitsem, 0);
+  sema_init(&t->recycleSem, 0);
+  sema_init(&t->inforDeathSem, 0);
+  t->loadsuccess = true;
+#endif
   t->max_fd = 1;
 }
 

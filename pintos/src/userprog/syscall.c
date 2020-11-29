@@ -10,11 +10,41 @@
 #include "devices/input.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
+#include "filesys/off_t.h"
+#include "lib/kernel/console.h"
+#include "lib/user/syscall.h"
 
 #define NumberCall 21
 #define stdin 1
 
 typedef void (*handler)(struct intr_frame *f);
+
+
+/*d Reads a byte at user virtual address UADDR.
+   UADDR must be below PHYS_BASE.
+   Returns the byte value if successful, -1 if a segfault
+   occurred. */
+static int
+get_user(const uint8_t *uaddr)
+{
+  int result;
+  asm("movl $1f, %0; movzbl %1, %0; 1:"
+      : "=&a"(result)
+      : "m"(*uaddr));
+  return result;
+}
+/* Writes BYTE to user address UDST.
+   UDST must be below PHYS_BASE.
+   Returns true if successful, false if a segfault occurred. */
+static bool
+put_user(uint8_t *udst, uint8_t byte)
+{
+  int error_code;
+  asm("movl $1f, %0; movb %b2, %1; 1:"
+      : "=&a"(error_code), "=m"(*udst)
+      : "q"(byte));
+  return error_code != -1;
+}
 
 handler handlers[NumberCall];
 /*获得系统调用的编号*/
@@ -56,6 +86,12 @@ void SysSeek(struct intr_frame *f);
 /*用来应对remove 系统调用*/
 void SysRemove(struct intr_frame *f);
 
+/* 用来应对exec系统调用 */
+void SysExec(struct intr_frame *);
+
+/* 用来应对Wait系统调用 */
+void SysWait(struct intr_frame *);
+
 void syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
@@ -69,6 +105,8 @@ void syscall_init (void)
   handlers[SYS_FILESIZE] = SysFilesize;
   handlers[SYS_SEEK] = SysSeek;
   handlers[SYS_REMOVE] = SysRemove;
+  handlers[SYS_EXEC] = SysExec;  //生成子进程
+  handlers[SYS_WAIT] = SysWait;  //等待子进程
 }
 
 static void
@@ -293,6 +331,53 @@ void SysRemove(struct intr_frame *f){
   bool result = (int)filesys_remove(file_name);
   lock_release(&filesys_lock);
   f->eax = result;
+}
+
+/*生成子进程*/
+void SysExec(struct intr_frame *f){
+  char *tempesp = (char *)f->esp;       //新栈指针
+  tempesp += 4;                         //新栈指针上移4位
+  if (*(uint32_t *)tempesp > PHYS_BASE) //如果此时栈指针不在用户栈中
+  {
+    exit(-1);
+  }
+  if ((*tempesp == NULL) || (get_user(*(uint8_t **)tempesp) == -1)) //同上
+  {
+    exit(-1);
+  }
+  char *cmd_line; //命令行
+
+  cmd_line = palloc_get_page(0); //从页中获得命令行
+
+  if (cmd_line == NULL) //如果命令行是空的
+  {
+    f->eax = -1; //存入返回值为空
+    // return -1;
+  }
+  else{
+    strlcpy(cmd_line, *(char **)tempesp, PGSIZE); //拷贝命令行
+
+    // lock_acquire(&handlesem);
+    // struct file* openedfile = filesys_open(cmd_line);
+    // lock_release(&handlesem);
+
+    int answer = (int)process_execute(cmd_line); //运行进程
+
+    f->eax = answer; //返回值是运行后的返回值
+    // file_close(openedfile);
+    palloc_free_page(cmd_line); //销毁命令行
+  }
+}
+
+/*等待子进程*/
+void SysWait(struct intr_frame *f) {
+  char *tempesp = (char *)f->esp; //新栈指针
+
+  tempesp += 4;                  //栈指针上移4位
+  pid_t pid = *(pid_t *)tempesp; //将pid从栈帧中取出
+  // printf("pid : %d\n", pid);
+  int answer = process_wait((tid_t)pid);
+  f->eax = answer; //返回值是线程等待函数的返回值
 }
 
 /*从一个进程中退出*/

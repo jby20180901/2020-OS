@@ -106,6 +106,17 @@ struct thread
    struct list childrenlist;//子进程列表
    struct list_elem child_of;//用来放在父进程的子进程列表中
 
+   struct semaphore startLoadSem;      /* 子进程加载信号量 */
+   struct semaphore returnLoadSem;     /* 子进程是否加载成功 */
+    
+   // struct semaphore waitsem;           /* 父进程等待子进程的信号量 */
+   struct semaphore recycleSem;        /* 父进程等待回收子进程的资源 */
+
+   struct semaphore dieSem;            /* 进程死亡信号量 */
+   struct semaphore inforDeathSem;     /* 通知父进程子进程死亡的信号量 */
+
+   bool loadsuccess;                   /* 是否load进程成功的标志 */
+   struct file *file;                  /* 当前打开的文件 */
    struct list list_opened_file;
    int max_fd;
 

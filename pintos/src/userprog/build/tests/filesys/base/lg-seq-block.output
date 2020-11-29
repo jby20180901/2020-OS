@@ -6,14 +6,14 @@ squish-pty bochs -q
                   Compiled on Nov 28 2020 at 20:18:57
 ========================================================================
 PiLo hda1
-Loading...........
+Loading............
 Kernel command line: -q -f extract run lg-seq-block
 Pintos booting with 4,096 kB RAM...
 383 pages available in kernel pool.
 383 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hda: 5,040 sectors (2 MB), model "BXHD00011", serial "Generic 1234"
-hda1: 184 sectors (92 kB), Pintos OS kernel (20)
+hda1: 193 sectors (96 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 98 sectors (49 kB), Pintos scratch (22)
 filesys: using hda2
@@ -35,8 +35,8 @@ Executing 'lg-seq-block':
 (lg-seq-block) end
 lg-seq-block: exit(0)
 Execution of 'lg-seq-block' complete.
-Timer: 821 ticks
-Thread: 44 idle ticks, 240 kernel ticks, 539 user ticks
+Timer: 820 ticks
+Thread: 45 idle ticks, 239 kernel ticks, 538 user ticks
 hda2 (filesys): 529 reads, 647 writes
 hda3 (scratch): 97 reads, 2 writes
 Console: 1150 characters output
