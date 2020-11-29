@@ -30,7 +30,7 @@ Executing 'wait-simple':
 wait-simple: exit(-1)
 Execution of 'wait-simple' complete.
 Timer: 350 ticks
-Thread: 87 idle ticks, 244 kernel ticks, 21 user ticks
+Thread: 86 idle ticks, 245 kernel ticks, 21 user ticks
 hda2 (filesys): 90 reads, 378 writes
 hda3 (scratch): 185 reads, 2 writes
 Console: 930 characters output

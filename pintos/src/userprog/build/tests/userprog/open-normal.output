@@ -31,7 +31,7 @@ Executing 'open-normal':
 open-normal: exit(0)
 Execution of 'open-normal' complete.
 Timer: 294 ticks
-Thread: 45 idle ticks, 223 kernel ticks, 29 user ticks
+Thread: 46 idle ticks, 222 kernel ticks, 29 user ticks
 hda2 (filesys): 94 reads, 200 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 943 characters output

@@ -30,7 +30,7 @@ Executing 'exec-arg':
 exec-arg: exit(-1)
 Execution of 'exec-arg' complete.
 Timer: 349 ticks
-Thread: 83 idle ticks, 247 kernel ticks, 22 user ticks
+Thread: 82 idle ticks, 248 kernel ticks, 22 user ticks
 hda2 (filesys): 90 reads, 378 writes
 hda3 (scratch): 185 reads, 2 writes
 Console: 910 characters output

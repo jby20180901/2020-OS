@@ -30,7 +30,7 @@ Executing 'wait-twice':
 wait-twice: exit(-1)
 Execution of 'wait-twice' complete.
 Timer: 349 ticks
-Thread: 85 idle ticks, 246 kernel ticks, 21 user ticks
+Thread: 86 idle ticks, 245 kernel ticks, 21 user ticks
 hda2 (filesys): 90 reads, 378 writes
 hda3 (scratch): 185 reads, 2 writes
 Console: 924 characters output

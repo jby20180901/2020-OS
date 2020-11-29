@@ -30,7 +30,7 @@ Executing 'wait-killed':
 wait-killed: exit(-1)
 Execution of 'wait-killed' complete.
 Timer: 351 ticks
-Thread: 86 idle ticks, 246 kernel ticks, 22 user ticks
+Thread: 85 idle ticks, 247 kernel ticks, 22 user ticks
 hda2 (filesys): 90 reads, 380 writes
 hda3 (scratch): 186 reads, 2 writes
 Console: 927 characters output
