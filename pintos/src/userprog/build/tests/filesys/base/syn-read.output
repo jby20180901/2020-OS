@@ -39,9 +39,9 @@ load: child-syn-read: open failed
 (syn-read) exec child 4 of 10: "child-syn-read 3": FAILED
 syn-read: exit(1)
 Execution of 'syn-read' complete.
-Timer: 647 ticks
-Thread: 94 idle ticks, 272 kernel ticks, 283 user ticks
-hda2 (filesys): 426 reads, 428 writes
+Timer: 645 ticks
+Thread: 94 idle ticks, 272 kernel ticks, 281 user ticks
+hda2 (filesys): 422 reads, 428 writes
 hda3 (scratch): 206 reads, 2 writes
 Console: 1304 characters output
 Keyboard: 0 keys pressed

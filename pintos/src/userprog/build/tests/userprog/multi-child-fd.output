@@ -30,13 +30,18 @@ Erasing ustar archive...
 Executing 'multi-child-fd':
 (multi-child-fd) begin
 (multi-child-fd) open "sample.txt"
-multi-child-fd: exit(-1)
+(child-close) begin
+child-close: exit(-1)
+(multi-child-fd) wait(exec()) = -1
+(multi-child-fd) verified contents of "sample.txt"
+(multi-child-fd) end
+multi-child-fd: exit(0)
 Execution of 'multi-child-fd' complete.
-Timer: 408 ticks
-Thread: 90 idle ticks, 291 kernel ticks, 30 user ticks
-hda2 (filesys): 114 reads, 410 writes
+Timer: 472 ticks
+Thread: 91 idle ticks, 309 kernel ticks, 74 user ticks
+hda2 (filesys): 152 reads, 410 writes
 hda3 (scratch): 200 reads, 2 writes
-Console: 1029 characters output
+Console: 1177 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off..
