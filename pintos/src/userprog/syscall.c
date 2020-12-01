@@ -343,7 +343,7 @@ void SysExec(struct intr_frame *f){
   }
   if (/*(*tempesp == NULL) ) ||*/ (get_user(*(uint8_t **)tempesp) == -1)) //同上
   {
-    printf("slsld\n");
+    //printf("slsld\n");
     exit(-1);
   }
   char *cmd_line; //命令行

@@ -1,2 +1,5 @@
 FAIL
-run: wait returned -1.: FAILED
+Kernel panic in run: PANIC at ../../filesys/file.c:135 in file_allow_write(): assertion `file != NULL' failed.
+Call stack: 0xc0027977
+Translation of call stack:
+0xc0027977: intrff_stub (threads/intr-stubs.S:0)

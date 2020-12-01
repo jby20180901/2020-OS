@@ -4,7 +4,7 @@ squish-pty bochs -q
 ========================================================================
                        Bochs x86 Emulator 2.6.7
               Built from SVN snapshot on November 2, 2014
-                  Compiled on Nov 28 2020 at 20:18:57
+                  Compiled on Sep 21 2020 at 21:42:21
 ========================================================================
 PiLo hda1
 Loading............
@@ -34,8 +34,8 @@ child-simple: exit(81)
 (wait-twice) end
 wait-twice: exit(0)
 Execution of 'wait-twice' complete.
-Timer: 427 ticks
-Thread: 85 idle ticks, 281 kernel ticks, 63 user ticks
+Timer: 423 ticks
+Thread: 85 idle ticks, 279 kernel ticks, 61 user ticks
 hda2 (filesys): 130 reads, 378 writes
 hda3 (scratch): 185 reads, 2 writes
 Console: 1045 characters output

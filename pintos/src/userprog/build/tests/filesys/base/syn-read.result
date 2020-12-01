@@ -1,2 +1,1 @@
-FAIL
-run: exec child 4 of 10: "child-syn-read 3": FAILED
+PASS

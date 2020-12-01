@@ -1,6 +1,6 @@
 00000000000i[      ] Bochs x86 Emulator 2.6.7
 00000000000i[      ]   Built from SVN snapshot on November 2, 2014
-00000000000i[      ] Compiled on Nov 28 2020 at 20:18:57
+00000000000i[      ] Compiled on Sep 21 2020 at 21:42:21
 00000000000i[      ] System configuration
 00000000000i[      ]   processors: 1 (cores=1, HT threads=1)
 00000000000i[      ]   A20 line support: yes
@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f39181ff010. after alignment, vector=0x7f3918200000
+00000000000i[MEM0  ] allocated memory at 0x7f9e2cd7a010. after alignment, vector=0x7f9e2cd7b000
 00000000000i[MEM0  ] 4.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=4
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/local/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using specified time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Dec 31 16:00:00 1969 (time0=0)
+00000000000i[CMOS  ] Setting initial clock to: Thu Jan  1 08:00:00 1970 (time0=0)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -66,7 +66,7 @@
 00000000000i[PLUGIN] init_dev of 'keyboard' plugin device by virtual method
 00000000000i[KBD   ] will paste characters every 400 keyboard ticks
 00000000000i[PLUGIN] init_dev of 'harddrv' plugin device by virtual method
-00000000000i[HD    ] HD on ata0-0: '/tmp/xudeS7CWVC.dsk', 'flat' mode
+00000000000i[HD    ] HD on ata0-0: '/tmp/2uPvU1Hefo.dsk', 'flat' mode
 00000000000i[IMG   ] hd_size: 2580480
 00000000000i[HD    ] ata0-0: using specified geometry: CHS=5/16/63
 00000000000i[HD    ] Using boot sequence disk, none, none
@@ -76,7 +76,7 @@
 00000000000i[PLUGIN] init_dev of 'unmapped' plugin device by virtual method
 00000000000i[PLUGIN] init_dev of 'biosdev' plugin device by virtual method
 00000000000i[PLUGIN] init_dev of 'speaker' plugin device by virtual method
-00000000000e[PCSPK ] Failed to open /dev/console: Permission denied
+00000000000e[PCSPK ] Failed to open /dev/console: 权限不够
 00000000000e[PCSPK ] Deactivating beep on console
 00000000000i[PLUGIN] init_dev of 'extfpuirq' plugin device by virtual method
 00000000000i[PLUGIN] init_dev of 'parallel' plugin device by virtual method
@@ -171,29 +171,28 @@
 00001497095i[BXVGA ] VBE known Display Interface b0c5
 00001500020i[VBIOS ] VBE Bios $Id: vbe.c,v 1.65 2014/07/08 18:02:25 vruppert Exp $
 00001844193i[BIOS  ] ata0-0: PCHS=5/16/63 translation=none LCHS=5/16/63
-00004592616i[XGUI  ] charmap update. Font Height is 16
 00005722586i[BIOS  ] IDE time out
 00008766512i[BIOS  ] Booting from 0000:7c00
-00016676249p[UNMAP ] >>PANIC<< Shutdown port: shutdown requested
-00016676249i[CPU0  ] CPU is in protected mode (active)
-00016676249i[CPU0  ] CS.mode = 32 bit
-00016676249i[CPU0  ] SS.mode = 32 bit
-00016676249i[CPU0  ] EFER   = 0x00000000
-00016676249i[CPU0  ] | EAX=0000006e  EBX=c002c3e0  ECX=c000ef7e  EDX=ffff8900
-00016676249i[CPU0  ] | ESP=c000ef70  EBP=c000efe8  ESI=00000000  EDI=c0038014
-00016676249i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
-00016676249i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-00016676249i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] |  FS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] |  GS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
-00016676249i[CPU0  ] | EIP=c0025637 (c0025636)
-00016676249i[CPU0  ] | CR0=0xe0010015 CR2=0x00000000
-00016676249i[CPU0  ] | CR3=0x00101000 CR4=0x00000000
-00016676249i[CPU0  ] 0xc0025636>> out dx, al : EE
-00016676249i[CMOS  ] Last time is 16 (Wed Dec 31 16:00:16 1969)
-00016676249i[XGUI  ] Exit
-00016676249i[      ] restoring default signal behavior
-00016676249i[SIM   ] quit_sim called with exit code 1
+00021257614p[UNMAP ] >>PANIC<< Shutdown port: shutdown requested
+00021257614i[CPU0  ] CPU is in protected mode (active)
+00021257614i[CPU0  ] CS.mode = 32 bit
+00021257614i[CPU0  ] SS.mode = 32 bit
+00021257614i[CPU0  ] EFER   = 0x00000000
+00021257614i[CPU0  ] | EAX=0000006e  EBX=c002c3e0  ECX=c000ef7e  EDX=ffff8900
+00021257614i[CPU0  ] | ESP=c000ef70  EBP=c000efe8  ESI=00000000  EDI=c0038014
+00021257614i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
+00021257614i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00021257614i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] |  FS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] |  GS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
+00021257614i[CPU0  ] | EIP=c0025637 (c0025636)
+00021257614i[CPU0  ] | CR0=0xe0010015 CR2=0x00000000
+00021257614i[CPU0  ] | CR3=0x00101000 CR4=0x00000000
+00021257614i[CPU0  ] 0xc0025636>> out dx, al : EE
+00021257614i[CMOS  ] Last time is 21 (Thu Jan  1 08:00:21 1970)
+00021257614i[XGUI  ] Exit
+00021257614i[      ] restoring default signal behavior
+00021257614i[SIM   ] quit_sim called with exit code 1

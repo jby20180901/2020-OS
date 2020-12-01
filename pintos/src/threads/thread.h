@@ -117,6 +117,7 @@ struct thread
 
    bool loadsuccess;                   /* 是否load进程成功的标志 */
    struct file *file;                  /* 当前打开的文件 */
+   struct file *thread_file;
    struct list list_opened_file;
    int max_fd;
 

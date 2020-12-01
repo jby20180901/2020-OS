@@ -15,10 +15,7 @@ test_main (void)
   
   CHECK (read (handle, buffer, sizeof buffer) == (int) sizeof buffer,
          "read \"rox-simple\"");
-       printf("%d\n",handle);
-  for(int i=0;i<16;i++)
-       printf("%d ",buffer[i]);
        
-//   CHECK (write (handle, buffer, sizeof buffer) == 0,
-//          "try to write \"rox-simple\"");
+  CHECK (write (handle, buffer, sizeof buffer) == 0,
+          "try to write \"rox-simple\"");
 }

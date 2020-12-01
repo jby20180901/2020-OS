@@ -3,7 +3,7 @@ squish-pty bochs -q
 ========================================================================
                        Bochs x86 Emulator 2.6.7
               Built from SVN snapshot on November 2, 2014
-                  Compiled on Nov 28 2020 at 20:18:57
+                  Compiled on Sep 21 2020 at 21:42:21
 ========================================================================
 PiLo hda1
 Loading............
@@ -33,8 +33,8 @@ Executing 'lg-random':
 (lg-random) end
 lg-random: exit(0)
 Execution of 'lg-random' complete.
-Timer: 696 ticks
-Thread: 55 idle ticks, 240 kernel ticks, 404 user ticks
+Timer: 695 ticks
+Thread: 53 idle ticks, 236 kernel ticks, 408 user ticks
 hda2 (filesys): 235 reads, 510 writes
 hda3 (scratch): 100 reads, 2 writes
 Console: 1054 characters output
