@@ -198,7 +198,9 @@ void SysCreate(struct intr_frame *f){
   validateAddr(file_name);
   unsigned initial_size = getArguments(f,2);
   //printf("file_name:%s\n", file_name);
+  lock_acquire(&filesys_lock);
   bool ok = filesys_create(file_name, initial_size);
+  lock_release(&filesys_lock);
   f->eax = (int)ok;
 }
 
@@ -207,9 +209,9 @@ void SysCreate(struct intr_frame *f){
 void SysOpen(struct intr_frame *f){
   const char *file_name = (char*)getArguments(f,1);
   validateAddr(file_name);
-  //lock_acquire(&filesys_lock);
+  lock_acquire(&filesys_lock);
   struct file* new_file_position = filesys_open(file_name);
-  //lock_release(&filesys_lock);
+  lock_release(&filesys_lock);
   if(new_file_position==NULL){
     f->eax = -1;
   }

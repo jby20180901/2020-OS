@@ -34,7 +34,7 @@ Executing 'lg-random':
 lg-random: exit(0)
 Execution of 'lg-random' complete.
 Timer: 695 ticks
-Thread: 53 idle ticks, 236 kernel ticks, 408 user ticks
+Thread: 50 idle ticks, 236 kernel ticks, 411 user ticks
 hda2 (filesys): 235 reads, 510 writes
 hda3 (scratch): 100 reads, 2 writes
 Console: 1054 characters output

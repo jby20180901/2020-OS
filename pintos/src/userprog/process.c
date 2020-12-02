@@ -192,7 +192,7 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-  file_allow_write(cur->thread_file);
+  if(cur->thread_file!=NULL)file_allow_write(cur->thread_file);
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
@@ -351,9 +351,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
   process_activate ();
 
   /* Open executable file. */
+  lock_acquire(&filesys_lock);
   file = filesys_open (file_name);
+  lock_release(&filesys_lock);
   t->thread_file = file;
-  file_deny_write(file);
+  if(file!=NULL)file_deny_write(file);
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", file_name);

@@ -25,14 +25,16 @@ Putting 'exec-missing' into the file system...
 Erasing ustar archive...
 Executing 'exec-missing':
 (exec-missing) begin
-Kernel PANIC at ../../filesys/file.c:121 in file_deny_write(): assertion `file != NULL' failed.
-Call stack: 0xc0027977 0x2d686375no-such-file: exit(-1)
-Kernel PANIC recursion at ../../filesys/file.c:135 in file_allow_write().
-Timer: 254 ticks
-Thread: 43 idle ticks, 180 kernel ticks, 31 user ticks
+load: no-such-file: open failed
+(exec-missing) exec("no-such-file"): -1
+(exec-missing) end
+exec-missing: exit(0)
+Execution of 'exec-missing' complete.
+Timer: 293 ticks
+Thread: 43 idle ticks, 209 kernel ticks, 44 user ticks
 hda2 (filesys): 82 reads, 194 writes
 hda3 (scratch): 94 reads, 2 writes
-Console: 1052 characters output
+Console: 977 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off..

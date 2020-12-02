@@ -1,7 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../filesys/file.c:121 in file_deny_write(): assertion `file != NULL' failed.
-Call stack: 0xc0027977 0x2d686375
-Translation of call stack:
-In kernel.o:
-0xc0027977: intrff_stub (threads/intr-stubs.S:0)
-0x2d686375: (unknown)
+PASS

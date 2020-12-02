@@ -41,7 +41,7 @@ child-rox: exit(12)
 rox-child: exit(0)
 Execution of 'rox-child' complete.
 Timer: 464 ticks
-Thread: 94 idle ticks, 284 kernel ticks, 89 user ticks
+Thread: 93 idle ticks, 283 kernel ticks, 91 user ticks
 hda2 (filesys): 134 reads, 410 writes
 hda3 (scratch): 200 reads, 2 writes
 Console: 1209 characters output

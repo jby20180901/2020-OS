@@ -283,16 +283,3 @@ multi-oom: exit(-1)
 multi-oom: exit(-1)
 multi-oom: exit(-1)
 multi-oom: exit(-1)
-Kernel PANIC at ../../filesys/file.c:135 in file_allow_write(): assertion `file != NULL' failed.
-Call stack: 0xc0027977 0.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 61718 ticks
-Thread: 51 idle ticks, 4965 kernel ticks, 56702 user ticks
-hda2 (filesys): 76737 reads, 228 writes
-hda3 (scratch): 111 reads, 2 writes
-Console: 6262 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off..

@@ -88,8 +88,8 @@ multi-recurse: exit(14)
 (multi-recurse) end 15
 multi-recurse: exit(15)
 Execution of 'multi-recurse' complete.
-Timer: 1131 ticks
-Thread: 48 idle ticks, 480 kernel ticks, 606 user ticks
+Timer: 1132 ticks
+Thread: 48 idle ticks, 478 kernel ticks, 608 user ticks
 hda2 (filesys): 587 reads, 216 writes
 hda3 (scratch): 105 reads, 2 writes
 Console: 2587 characters output
