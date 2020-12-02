@@ -95,16 +95,16 @@ void SysWait(struct intr_frame *);
 void syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
-  handlers[SYS_HALT] = SysHalt;
+  handlers[SYS_HALT] = SysHalt;//fj
   handlers[SYS_WRITE] = SysWrite;
   handlers[SYS_EXIT] = SysExit;
-  handlers[SYS_CREATE] = SysCreate;
-  handlers[SYS_OPEN] = SysOpen;
-  handlers[SYS_CLOSE] = SysClose;
+  handlers[SYS_CREATE] = SysCreate;//fj
+  handlers[SYS_OPEN] = SysOpen;//fj
+  handlers[SYS_CLOSE] = SysClose;//fj
   handlers[SYS_READ] = SysRead;
-  handlers[SYS_FILESIZE] = SysFilesize;
-  handlers[SYS_SEEK] = SysSeek;
-  handlers[SYS_REMOVE] = SysRemove;
+  handlers[SYS_FILESIZE] = SysFilesize;//fj
+  handlers[SYS_SEEK] = SysSeek;//fj
+  handlers[SYS_REMOVE] = SysRemove;//fj
   handlers[SYS_EXEC] = SysExec;  //生成子进程
   handlers[SYS_WAIT] = SysWait;  //等待子进程
 }
