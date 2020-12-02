@@ -63,8 +63,8 @@ child-syn-wrt: exit(9)
 (syn-write) end
 syn-write: exit(0)
 Execution of 'syn-write' complete.
-Timer: 1183 ticks
-Thread: 95 idle ticks, 471 kernel ticks, 620 user ticks
+Timer: 1189 ticks
+Thread: 96 idle ticks, 475 kernel ticks, 620 user ticks
 hda2 (filesys): 541 reads, 444 writes
 hda3 (scratch): 206 reads, 2 writes
 Console: 2337 characters output

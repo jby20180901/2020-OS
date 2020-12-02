@@ -281,9 +281,9 @@ void SysRead(struct intr_frame *f){
     }
     else{//存在这个文件,直接返回读了多少即可
       struct file *file_position = list_entry(file_node, struct opened_file, node)->position;
-      lock_acquire(&filesys_lock);
+      //lock_acquire(&filesys_lock);
       unsigned result = file_read(file_position, (const char*)buffer, size);
-      lock_release(&filesys_lock);
+      //lock_release(&filesys_lock);
       f->eax = (int)result;
     }
   }

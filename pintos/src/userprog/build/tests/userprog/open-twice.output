@@ -32,8 +32,8 @@ Executing 'open-twice':
 (open-twice) end
 open-twice: exit(0)
 Execution of 'open-twice' complete.
-Timer: 310 ticks
-Thread: 42 idle ticks, 228 kernel ticks, 43 user ticks
+Timer: 313 ticks
+Thread: 42 idle ticks, 230 kernel ticks, 43 user ticks
 hda2 (filesys): 97 reads, 200 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 1009 characters output

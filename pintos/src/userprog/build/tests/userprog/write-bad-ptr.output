@@ -30,8 +30,8 @@ Executing 'write-bad-ptr':
 (write-bad-ptr) open "sample.txt"
 write-bad-ptr: exit(-1)
 Execution of 'write-bad-ptr' complete.
-Timer: 300 ticks
-Thread: 45 idle ticks, 227 kernel ticks, 30 user ticks
+Timer: 301 ticks
+Thread: 45 idle ticks, 228 kernel ticks, 31 user ticks
 hda2 (filesys): 94 reads, 200 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 972 characters output

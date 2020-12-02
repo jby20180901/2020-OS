@@ -192,11 +192,14 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-  if(cur->thread_file!=NULL)file_allow_write(cur->thread_file);
+  if(cur->thread_file!=NULL){
+    file_allow_write(cur->thread_file);
+    file_close(cur->thread_file);
+  }
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
-  if (pd != NULL) 
+  if (pd != NULL)
     {
       /* Correct ordering here is crucial.  We must set
          cur->pagedir to NULL before switching page directories,
@@ -225,16 +228,23 @@ process_exit (void)
     }
 
     struct list_elem *now = NULL;
+    struct list_elem *former_node = NULL;
     for(now = list_begin(&(cur->list_opened_file)); now!=list_end(&(cur->list_opened_file)); now = list_next(now)){
       struct opened_file *cur_file = list_entry(now,struct opened_file, node);
+      if(former_node!=NULL){
+        free(list_entry(former_node, struct opened_file, node));
+      }
+      former_node = now;
       if (cur_file != NULL) //如果此时文件不是空
       {
         lock_acquire(&filesys_lock);
         file_close(cur_file->position); //关闭这个文件
+        list_remove(now);
         lock_release(&filesys_lock);
         // filenum--; //文件数--
       }
     }
+    if(former_node!=NULL)free(list_entry(former_node, struct opened_file, node));
     if (cur->file != NULL) //如果当前使用的文件不是空
     {
       lock_acquire(&filesys_lock); //获得锁

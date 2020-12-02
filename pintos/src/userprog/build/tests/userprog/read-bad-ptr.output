@@ -30,8 +30,8 @@ Executing 'read-bad-ptr':
 (read-bad-ptr) open "sample.txt"
 read-bad-ptr: exit(-1)
 Execution of 'read-bad-ptr' complete.
-Timer: 298 ticks
-Thread: 44 idle ticks, 227 kernel ticks, 30 user ticks
+Timer: 301 ticks
+Thread: 44 idle ticks, 229 kernel ticks, 30 user ticks
 hda2 (filesys): 94 reads, 200 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 965 characters output

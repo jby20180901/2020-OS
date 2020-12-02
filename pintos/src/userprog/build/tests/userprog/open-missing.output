@@ -28,8 +28,8 @@ Executing 'open-missing':
 (open-missing) end
 open-missing: exit(0)
 Execution of 'open-missing' complete.
-Timer: 279 ticks
-Thread: 43 idle ticks, 205 kernel ticks, 33 user ticks
+Timer: 280 ticks
+Thread: 43 idle ticks, 205 kernel ticks, 34 user ticks
 hda2 (filesys): 82 reads, 194 writes
 hda3 (scratch): 94 reads, 2 writes
 Console: 905 characters output

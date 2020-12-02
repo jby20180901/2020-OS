@@ -29,8 +29,8 @@ Executing 'create-bound':
 (create-bound) end
 create-bound: exit(0)
 Execution of 'create-bound' complete.
-Timer: 295 ticks
-Thread: 44 idle ticks, 208 kernel ticks, 45 user ticks
+Timer: 298 ticks
+Thread: 44 idle ticks, 212 kernel ticks, 45 user ticks
 hda2 (filesys): 79 reads, 202 writes
 hda3 (scratch): 96 reads, 2 writes
 Console: 942 characters output

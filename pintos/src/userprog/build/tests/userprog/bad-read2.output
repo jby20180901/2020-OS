@@ -27,8 +27,8 @@ Executing 'bad-read2':
 (bad-read2) begin
 bad-read2: exit(-1)
 Execution of 'bad-read2' complete.
-Timer: 248 ticks
-Thread: 42 idle ticks, 187 kernel ticks, 21 user ticks
+Timer: 251 ticks
+Thread: 42 idle ticks, 190 kernel ticks, 21 user ticks
 hda2 (filesys): 65 reads, 194 writes
 hda3 (scratch): 94 reads, 2 writes
 Console: 869 characters output
