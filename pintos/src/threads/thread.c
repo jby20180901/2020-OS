@@ -11,6 +11,9 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "filesys/filesys.h"
+#include "filesys/file.h"
+#include "threads/malloc.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -92,6 +95,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  lock_init (&filesys_lock);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -206,6 +210,11 @@ thread_create (const char *name, int priority,
 
   intr_set_level (old_level);
 
+#ifdef USERPROG
+  list_push_back(&thread_current()->childrenlist, &t->child_of);
+  t->waited = false;
+#endif
+
   /* Add to run queue. */
   thread_unblock (t);
 
@@ -298,6 +307,10 @@ thread_exit (void)
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
   intr_disable ();
+  struct thread *cur = thread_current();
+  if(cur->waited){//父进程正在等这个进程
+    sema_up(&cur->child_sema);
+  }
   list_remove (&thread_current()->allelem);
   thread_current ()->status = THREAD_DYING;
   schedule ();
@@ -469,7 +482,29 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+
   list_push_back (&all_list, &t->allelem);
+
+  t->ret = -1;
+  sema_init(&t->child_sema,0);
+  t->wait_for = -1;
+  if(strcmp(name,"main")!=0){
+    t->father_process = thread_current();
+  }
+  t->waited = false;
+
+  list_init(&t->list_opened_file);
+#ifdef USERPROG
+  list_init(&t->childrenlist);
+  sema_init(&t->dieSem, 0);
+  sema_init(&t->startLoadSem, 0);
+  sema_init(&t->returnLoadSem, 0);
+  // sema_init(&t->waitsem, 0);
+  sema_init(&t->recycleSem, 0);
+  sema_init(&t->inforDeathSem, 0);
+  t->loadsuccess = true;
+#endif
+  t->max_fd = 1;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -585,3 +620,46 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+struct find_argument{
+  struct thread *saved;
+  int tid;
+};
+/*比较两个线程的tid一不一样*/
+void cmp_thread_tid(struct thread *t, void *aux){
+  struct find_argument* arg = (struct find_argument*)aux;
+  if(t->tid == arg->tid){
+    arg->saved = t;
+  }
+}
+
+/*用tid获得一个线程*/
+struct thread *get_thread_by_tid(int tid){
+  struct thread *saved;
+  struct find_argument arg = {saved, tid};
+  enum intr_level old_level = intr_disable();
+  thread_foreach(cmp_thread_tid, &arg);
+  intr_set_level(old_level);
+  return arg.saved;
+}
+
+/*从当前线程中,根据fd获得一个文件*/
+struct list_elem *get_file_by_fd(int fd){
+  struct list_elem *now = NULL;
+  struct thread *cur = thread_current();
+  for(now = list_begin(&(cur->list_opened_file)); now!=list_end(&(cur->list_opened_file)); now = list_next(now)){
+    struct opened_file *cur_file = list_entry(now,struct opened_file, node);
+    //printf("current fd:%d\n", cur_file->fd);
+    if(cur_file->fd==fd){
+      //printf("found!\n");
+      return now;
+    }
+  }
+  return NULL;
+}
+
+/*根据一个文件的fd删除一个节点*/
+void remove_file_by_fd(int fd){
+  struct list_elem *target = get_file_by_fd(fd);
+  if(target!=NULL)list_remove(target);
+}
