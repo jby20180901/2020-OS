@@ -21,22 +21,6 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
-struct thread *find_child(tid_t giventid)//寻找子进程
-{
-  struct list *templist = &thread_current()->childrenlist;//当前进程的子进程序列
-  if (list_empty(templist))//如果是空的
-    return NULL;//返回NULL
-  struct list_elem *e;
-  for (e = list_begin(templist); e != list_end(templist);
-       e = list_next(e))//遍历
-  {
-    struct thread *t = list_entry(e, struct thread, child_of);
-    if (t->tid == giventid)
-      return t;//返回这个子进程
-  }
-  return NULL;
-}
-
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -53,20 +37,11 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   char *real_name, *save_pointer=NULL;
-  strlcpy (fn_copy, file_name, PGSIZE);
   real_name = strtok_r(file_name, " ", &save_pointer);
+  strlcpy (fn_copy, file_name, PGSIZE);
+
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (real_name, PRI_DEFAULT, start_process, fn_copy);
-  struct thread *child = find_child(tid);       //找到这个子进程
-  sema_down(&child->startLoadSem);              //等待子进程加载完毕
-  bool success = child->loadsuccess; //此时子进程加载完毕
-  sema_up(&child->returnLoadSem);     //把子进程从子进程加载成功信号量释放出来
-  if (!success)                      //如果子进程没加载成功
-  {
-    //For exec-missing case
-    sema_down(&child->recycleSem); //当前进程阻塞在子进程退出信号量，等待子进程退出，并回收子进程
-    return -1;                  //返回-1
-  }
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy); 
   return tid;
@@ -87,30 +62,27 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   char *real_name, *save_pointer=NULL;
-  char * token;// the arguments we are analyzing
-  //printf("full name:%s\n",file_name);
-  token = strtok_r(file_name," ", &save_pointer);
-  success = load (token, &if_.eip, &if_.esp);
-  thread_current()->loadsuccess = success;      //当前进程的加载状态success
-  sema_up(&thread_current()->startLoadSem);          //作为子进程，我已经加载成功了，释放等待我加载的父进程
-  sema_down(&thread_current()->returnLoadSem);       //当前进程阻塞在returnLoadSem上，等待父进程确认自己的加载状态
+  real_name = strtok_r(file_name_," ", &save_pointer);
+  success = load (real_name, &if_.eip, &if_.esp);
+
   
   /* If load failed, quit. */
-  if (!success) {
-    thread_current()->ret = -1;//失败了，返回值为-1
+  if (!success) 
     thread_exit ();
-  }
     /* after the esp was sat, we should now set up the arguments*/
   char *argv[256];// the pointer to the content of the arguments
   int argc = 0;// the number of arguments 
   char * cur = if_.esp;// the current pointer
+  char * token;// the arguments we are analyzing
 
   /*copy all the content of arguments onto the heap*/
-  for(; token!=NULL; token = strtok_r(NULL," ", &save_pointer)){
-    //printf("arg:%s\n", token);
-    cur-= (strlen(token)+2);
-    strlcpy(cur, token, strlen(token)+2);
-    argv[argc++] = cur;
+  token = strtok_r(file_name_," ", &save_pointer);
+  cur -= (strlen(token)+1);
+  strlcpy(cur,token, strlen(token));
+  
+  while((token=strtok_r(NULL," ", &save_pointer))!=NULL){
+    cur-=(strlen(token)+1);
+    strlcpy(cur,token,strlen(token));
   }
   /*data alignment*/
   while(((int)(cur))%4!=0){
@@ -118,9 +90,6 @@ start_process (void *file_name_)
   }
   int * arg_entry = cur;
   int i = argc-1;
-  /*push NULL onto the stack*/
-  arg_entry--;
-  (*arg_entry) = 0;
   /*put the argv[i] onto the stack*/
   while(i>=0){
     arg_entry--;
@@ -133,12 +102,10 @@ start_process (void *file_name_)
   /*把agrc放好*/
   arg_entry--;
   *arg_entry = argc;
-  //printf("argc:%d\n", *arg_entry);
   /*return address*/
   arg_entry--;
   *arg_entry=0;
   if_.esp = arg_entry;
-  //printf("return address:%d\n", *(int*)(if_.esp));
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -160,30 +127,9 @@ start_process (void *file_name_)
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid) 
+process_wait (tid_t child_tid UNUSED) 
 {
-  //printf("hahaha\n");
-  struct thread* child = get_thread_by_tid(child_tid);
-  if(child==NULL||child->father_process!=thread_current()||child->waited){//不存在这个进程,或者这个进程已经被杀死了,再或者这个进程压根就不是子进程
-    return -1;
-  }
-  else{
-    child->waited = true;
-    thread_current()->wait_for = child;
-    sema_down(&child->child_sema);
-    int exitstatus = child->ret; //退出状态是子进程的退出状态
-    if (child->file != NULL)     //子进程打开文件不是空
-    {
-      lock_release(&filesys_lock);      //获得读写锁
-      file_allow_write(child->file); //允许写子进程当前操作的文件
-      lock_release(&filesys_lock);      //释放读写锁
-    }
-    sema_up(&child->dieSem);   //把子进程从死亡信号量上释放，继续它的回收操作
-    sema_down(&child->inforDeathSem); //阻塞在子进程的inforDeathSem上，等待子进程将自身从父进程列表中删除
-
-    child->waited = false; //子进程等待撞态变为false
-    return exitstatus;
-  }
+  return -1;
 }
 
 /* Free the current process's resources. */
@@ -192,7 +138,7 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-  if(cur->thread_file!=NULL)file_allow_write(cur->thread_file);
+
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
@@ -208,42 +154,8 @@ process_exit (void)
       cur->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
-      sema_up(&cur->recycleSem); //等待当前进程退出的进程释放
     }
-    if (strcmp(cur->name, "main") != 0) //不是main函数
-    {
-      //printf("%s: exit(%d)\n", cur->name, cur->ret); //输出退出状态
-
-      sema_up(&cur->child_sema);        //当前进程的等待信号释放
-      sema_down(&cur->dieSem);       //当前进程阻塞死亡序列，等待它的父进程来回收它
-      list_remove(&cur->child_of); //把当前进程从父进程的子进程列表中移除
-      sema_up(&cur->inforDeathSem);         //释放等待自己操作的父进程，通知父进程，自己死掉了
-    }
-    else //是main函数
-    {
-      sema_up(&cur->child_sema); //当前进程的等待信号释放
-    }
-
-    struct list_elem *now = NULL;
-    for(now = list_begin(&(cur->list_opened_file)); now!=list_end(&(cur->list_opened_file)); now = list_next(now)){
-      struct opened_file *cur_file = list_entry(now,struct opened_file, node);
-      if (cur_file != NULL) //如果此时文件不是空
-      {
-        lock_acquire(&filesys_lock);
-        file_close(cur_file->position); //关闭这个文件
-        lock_release(&filesys_lock);
-        // filenum--; //文件数--
-      }
-    }
-    if (cur->file != NULL) //如果当前使用的文件不是空
-    {
-      lock_acquire(&filesys_lock); //获得锁
-      file_close(cur->file);   //关闭文件
-      lock_release(&filesys_lock); //释放锁
-      // filenum--;                //文件数--
-      cur->file = NULL;        //当前使用的文件为空
-    }
-} 
+}
 
 /* Sets up the CPU for running user code in the current
    thread.
@@ -351,15 +263,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
   process_activate ();
 
   /* Open executable file. */
-  lock_acquire(&filesys_lock);
   file = filesys_open (file_name);
-  lock_release(&filesys_lock);
-  t->thread_file = file;
-  if(file!=NULL)file_deny_write(file);
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", file_name);
-      goto done;
+      goto done; 
     }
 
   /* Read and verify executable header. */
@@ -445,7 +353,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
-  //file_close (file);
+  file_close (file);
   return success;
 }
 
@@ -569,9 +477,8 @@ setup_stack (void **esp)
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success){
+      if (success)
         *esp = PHYS_BASE;
-      }
       else
         palloc_free_page (kpage);
     }

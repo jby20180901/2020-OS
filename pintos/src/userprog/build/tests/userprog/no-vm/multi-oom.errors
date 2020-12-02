@@ -1,7 +1,0 @@
-Use of literal control characters in variable names is deprecated at /usr/bin/pintos line 911.
-Prototype mismatch: sub main::SIGVTALRM () vs none at /usr/bin/pintos line 935.
-Constant subroutine SIGVTALRM redefined at /usr/bin/pintos line 927.
-00000000000i[      ] reading configuration from bochsrc.txt
-00000000000e[      ] bochsrc.txt:8: 'user_shortcut' will be replaced by new 'keyboard' option.
-00000000000i[      ] installing x module as the Bochs GUI
-00000000000i[      ] using log file bochsout.txt
